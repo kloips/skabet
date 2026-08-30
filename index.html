@@ -274,7 +274,7 @@
 
 <header>
   <h1>Skabet</h1>
-  <span class="weather" id="weather">14° · overskyet</span>
+  <span class="weather" id="weather">9–14° · overskyet</span>
 </header>
 
 <main>
@@ -434,9 +434,13 @@ const weatherCodes = {
 
 async function fetchWeather(){
   try {
-    const res  = await fetch("https://api.open-meteo.com/v1/forecast?latitude=55.68&longitude=12.57&current_weather=true");
+    const res  = await fetch("https://api.open-meteo.com/v1/forecast?latitude=55.68&longitude=12.57&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=Europe%2FCopenhagen");
     const data = await res.json();
-    return data.current_weather;
+    return {
+      min: data.daily.temperature_2m_min[0],   // dagens hele forlob, ikke bare lige nu
+      max: data.daily.temperature_2m_max[0],
+      weathercode: data.daily.weathercode[0]
+    };
   } catch {
     return null;                  // ingen forbindelse, brug fallback-temperaturen
   }
@@ -729,8 +733,8 @@ function cycleSlot(slot, direction){
 async function init(){
   const w = await fetchWeather();
   if (w){
-    temp = w.temperature;
-    weatherEl.textContent = `${Math.round(w.temperature)}° · ${weatherCodes[w.weathercode] || "ukendt vejr"}`;
+    temp = w.max;                // hoejeste forventede temperatur i dag
+    weatherEl.textContent = `${Math.round(w.min)}–${Math.round(w.max)}° · ${weatherCodes[w.weathercode] || "ukendt vejr"}`;
   }
   renderFavorites();
   shuffle();
