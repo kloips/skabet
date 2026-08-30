@@ -97,8 +97,8 @@
 
   .slot img.garment{
     grid-area:1 / 1;          /* stabler gammelt og nyt billede oveni hinanden under en crossfade */
-    max-width:100%;
-    max-height:100%;
+    max-width:100cqw;         /* cqw/cqh i stedet for % - en grid-raekke uden fast hoejde goer % upaalidelig */
+    max-height:100cqh;
     object-fit:contain;      /* holder proportionerne uanset billedstoerrelse */
     display:block;
     border-radius:8px;       /* pynter paa firkantede JPG'er, usynlig paa fritlagte PNG'er */
@@ -529,7 +529,10 @@ function buildOutfit(){
 const SWAP_FADE_MS = 320;   // skal matche transition-varigheden for img.garment i CSS'en
 
 function renderSlot(slot, item){
-  const oldImg = slot.querySelector("img.garment");
+  // Ved hurtige swipes efter hinanden kan flere billeder vaere ved at forsvinde samtidig ("leaving").
+  // Det aktuelt synlige billede er derfor det sidste der IKKE allerede er paa vej ud.
+  const stillCurrent = slot.querySelectorAll("img.garment:not(.leaving)");
+  const oldImg = stillCurrent[stillCurrent.length - 1] || null;
 
   if (!item){
     if (oldImg){
