@@ -157,7 +157,9 @@
   .nav-prev{left:6px;right:auto}
   .nav-next{right:6px}
 
-  .nav-prev img{transform:scaleX(-1)}
+  /* pil.jpg har en tynd kant om billedet - zoom ind saa kun selve pilen ses. */
+  .nav-btn img{padding:0;transform:scale(2)}
+  .nav-prev img{transform:scaleX(-1) scale(2)}
 
   .meta{
     margin:14px 2px 0;
