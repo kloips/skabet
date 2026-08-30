@@ -157,10 +157,19 @@
     z-index:4;
   }
 
-  .nav-btn:active{transform:translateY(-50%) scale(.94)}
-
   .nav-prev{left:6px;right:auto}
   .nav-next{right:6px}
+
+  /* Lille "nik" i pilens retning naar man trykker - styret fra JS,
+     da :active paa iOS ofte kraever en touch-lytter for at vise sig. */
+  @keyframes bump-left{
+    40%{transform:translateY(-50%) translateX(-6px) scale(.88)}
+  }
+  @keyframes bump-right{
+    40%{transform:translateY(-50%) translateX(6px) scale(.88)}
+  }
+  .nav-prev.bump{animation:bump-left .28s ease}
+  .nav-next.bump{animation:bump-right .28s ease}
 
   /* pil.jpg har en tynd kant om billedet - zoom ind saa kun selve pilen ses. */
   .nav-btn img{padding:0;transform:scale(2)}
@@ -664,8 +673,8 @@ lay.addEventListener("click", e => {
     return;
   }
 
-  if (btn.dataset.action === "prev") cycleSlot(slot, -1);
-  if (btn.dataset.action === "next") cycleSlot(slot, 1);
+  if (btn.dataset.action === "prev"){ bump(btn); cycleSlot(slot, -1); }
+  if (btn.dataset.action === "next"){ bump(btn); cycleSlot(slot, 1); }
 });
 
 /* Skalerer et billede ned via canvas, saa det fylder mindre i localStorage.
@@ -719,6 +728,12 @@ addForm.addEventListener("submit", async e => {
   addForm.reset();
   addDialog.close();
 });
+
+function bump(btn){
+  btn.classList.remove("bump");
+  void btn.offsetWidth;   // tving reflow, saa animationen kan starte forfra ved hurtige klik
+  btn.classList.add("bump");
+}
 
 /* Pilene blader frem/tilbage gennem den paagaeldende kategoris toej. */
 function cycleSlot(slot, direction){

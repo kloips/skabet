@@ -8,35 +8,53 @@ ingen brugere ud over mig, ingen login.
 
 ## Status lige nu
 
-Statisk prototype. Én HTML-fil med inline CSS og vanilla JS. Ingen build,
-ingen dependencies, ingen server, ingen database. Åbnes ved at dobbeltklikke
-på `index.html`.
+Statisk side, hostet live på GitHub Pages (se Hosting). Stadig én HTML-fil
+med inline CSS og vanilla JS — ingen build, ingen npm-dependencies, ingen
+server, ingen database. Kan stadig åbnes lokalt ved at dobbeltklikke på
+`index.html`, men bruges i praksis via den offentlige adresse.
 
-Det virker. Næste skridt er ikke at bygge om, men at forbedre i små trin.
+Roadmappets seks trin er alle gennemført (database er bevidst sprunget
+over, se Roadmap). Det virker. Næste skridt er ikke at bygge om, men at
+forbedre i små trin.
 
 ## Filstruktur
 
 ```
 skabet/
   index.html          hele appen: markup, CSS og JS i én fil
-  img/                fritlagte PNG'er, ét stykke tøj per fil
-    original-jpg/     de oprindelige fotos, bruges ikke af appen
+  manifest.json        PWA-manifest til "Føj til hjemmeskærm"
+  icon-source.svg       kilde-SVG til hjemmeskærm-ikonet (groent "S")
+  icons/                genererede PNG-ikoner (192, 512, apple-touch-icon)
+  img/
+    lock-icon.jpg       laase-ikon (bruges)
+    pil.jpg             pil-ikon til skift-knapperne (bruges, zoomet ind i CSS)
+    next-icon.jpg        gammelt "skift"-ikon fra foer swipe/pile - ubrugt
+    outerwear-*.png, mid-*.png, top-*.png, bottom-*.png   fritlagte PNG'er
+    shoes-*.JPG          stadig JPG, se Kendte problemer
+    original-jpg/       de oprindelige fotos, git-ignoreret, bruges ikke af appen
   CLAUDE.md
 ```
 
 ## Datamodel
 
-Al data ligger i objektet `files` øverst i `<script>` i `index.html`:
+Tøjet kommer fra to kilder, som laegges sammen til ét `items`-array ved
+opstart (`rebuildItems()`):
 
-```js
-const files = {
-  "top-1.png": "Sort t-shirt",
-  ...
-};
-```
+1. **Hardcodet** i objektet `files` øverst i `<script>` i `index.html`:
+   ```js
+   const files = {
+     "top-1.png": "Sort t-shirt",
+     ...
+   };
+   ```
+   Filnavnet før første bindestreg er kategorien. Værdien er navnet der
+   vises i favorit- og meta-chips.
+2. **Tilføjet fra formularen** ("+"-knappen i footeren). Gemmes i
+   `localStorage` under nøglen `skabet-extra-items` — findes derfor kun
+   på den enhed/browser det er tilføjet fra. Billedet skaleres til maks
+   1000px og gemmes som PNG (bevarer transparens) via `resizeImage()`.
 
-Filnavnet før første bindestreg er kategorien. Værdien er det navn der vises
-under sættet. Der er præcis fem gyldige kategorier:
+Der er præcis fem gyldige kategorier:
 
 | Kategori    | Slot i layoutet   |
 |-------------|-------------------|
@@ -47,32 +65,71 @@ under sættet. Der er præcis fem gyldige kategorier:
 | `shoes`     | sko, støvler      |
 
 Kategorinavnene er hardcodet flere steder: i `data-cat` på hvert `.slot`,
-i `buildOutfit()` og i rækkefølgen i `render()`. Ændrer du et af dem, skal
-alle fire steder rettes.
+i `CATS`-arrayet i JS, i `grid-template-areas` i `.lay` (CSS), og i
+kategori-selecten i tilføj-formularen. Ændrer du et af dem, skal alle
+steder rettes.
 
 ## Sådan virker logikken
 
-`buildOutfit()` vælger altid en `top`, en `bottom` og et par `shoes`.
-`mid` lægges kun på under 18 grader, `outerwear` kun under 15. Temperaturen
-er hardcodet til 14 i `buildOutfit()`.
+`buildOutfit()` vælger et stykke i alle fem kategorier hver gang — der er
+ikke længere nogen temperatur-afhængig fravalg af `mid`/`outerwear` (det
+var oprindeligt sådan, men blev bevidst fjernet). Vejret bruges kun til
+visning i headeren, ikke til at styre valget af tøj.
 
-Slots uden tøj rendres som stiplede felter i stedet for at blive skjult, så
-layoutet ikke hopper.
+**Undgå gentagelser:** `buildOutfit()` sammenligner med gårsdagens sæt
+(gemt i `localStorage` under `skabet-history`) og undgår at vælge samme
+stykke to dage i træk, hvis kategorien har et alternativ.
 
-Låseknappen holder fast i de nuværende bukser hen over næste shuffle.
+**Lås:** hvert slot har et låse-ikon (øverst til højre). Tryk toggler
+kategorien i `lockedCats` (et `Set` i JS) — låste kategorier beholder
+deres nuværende stykke ved næste shuffle, og pilene (se nedenfor) gør
+ingenting på en låst kategori.
+
+**Skift enkeltvis:** hvert slot har to pil-knapper (`pil.jpg`, spejlvendt
+for venstre) der blader frem/tilbage gennem den kategoris tøj i rækkefølge
+(`cycleSlot()`), ikke tilfældigt. Et lille "nik" i pilens retning
+(`@keyframes bump-left/bump-right`, trigget fra JS) giver visuel feedback
+ved klik — `:active` i CSS er ikke pålideligt nok på iOS Safari uden en
+touch-lytter et sted på siden.
+
+**Favoritter:** ☆-knappen i footeren gemmer/fjerner det viste sæt i
+`localStorage` (`skabet-favorites`). Gemte sæt vises som en chip-liste
+under outfittet; tryk henter sættet frem igen (ignorerer låse).
+
+**Billedskift (crossfade):** `renderSlot()` lader gammelt og nyt billede
+ligge oveni hinanden i samme grid-celle (`grid-area:1/1` på `.garment`)
+og krydsblender dem samtidig — venter med at fade det nye billede ind til
+det faktisk er loadet (`img.onload`), så det ikke popper frem sent hvis
+det ikke er cachet.
+
+Slots uden tøj rendres som stiplede felter i stedet for at blive skjult
+(sker i praksis ikke længere, siden alle fem kategorier altid vælges,
+men koden er der stadig som sikkerhedsnet).
 
 ## Konventioner
 
-- Vanilla JS. Ingen frameworks, ingen npm, intet build-trin. Spørg før du
-  introducerer nogen af delene.
-- Alt bliver i `index.html` indtil filen bliver uoverskuelig. Så splitter vi,
-  ikke før.
+- Vanilla JS. Ingen frameworks, ingen npm, intet build-trin til selve
+  appen. Node/Homebrew-værktøjer er kun blevet brugt til engangsopgaver
+  (GitHub CLI til deploy, `rsvg-convert` til at generere ikoner) — ikke
+  en runtime-dependency for appen selv. Spørg før du introducerer noget
+  der ændrer på det.
+- Alt bliver i `index.html` indtil filen bliver uoverskuelig. Så splitter
+  vi, ikke før.
 - CSS-variabler til farver og mål, defineret i `:root`. Ingen hardcodede
   hex-værdier længere nede i filen.
 - Kommentarer i koden er på dansk uden æ, ø og å.
 - Billeder vises med `object-fit: contain` i slots med fast højde. Det er
   det der holder layoutet stabilt når fotos har forskellige dimensioner.
   Lav det ikke om til `cover`.
+- `.slot` er `display:grid` (ikke flex) med `container-type:size` — det
+  er det der gør `cqw`/`cqh`-enhederne tilgængelige, som bruges til at
+  kompensere for at alt tøj udover sko er fotograferet på siden og roteres
+  90 grader i CSS (`transform:rotate(90deg)`). Almindelig `%`-baseret
+  `max-height` er upålidelig i et grid uden fast række-højde — brug cqw/cqh,
+  ikke `%`, til billedstørrelse i `.slot`.
+- Tøj-billedet (det faktiske billede af en genstand) har altid klassen
+  `garment`, adskilt fra ikon-billeder (lås/pil), så CSS-reglerne for
+  rotation/størrelse/crossfade ikke ved et uheld rammer ikonerne.
 
 ## Kendte problemer
 
@@ -93,9 +150,16 @@ Rækkefølgen er bevidst. Tag ét trin ad gangen, og spørg før du springer fre
 4. ✅ Formular til at tilføje tøj i appen. Nyt tøj tilføjet via formularen
    gemmes i `localStorage` (kun på den enhed det er tilføjet fra) og
    lægges sammen med det hardcodede tøj fra `files` ved opstart.
-5. Database. Først når trin 4 gør `files`-objektet upraktisk.
-6. PWA-manifest, så appen kan ligge på hjemmeskærmen. Giver nu mere mening
-   end før, siden appen har en stabil offentlig adresse (se Hosting).
+5. ⏭️ Database. Bevidst sprunget over — trin 4 (formularen) har ikke
+   gjort `files`-objektet upraktisk, og der er ingen grund til det endnu.
+6. ✅ PWA-manifest, så appen kan ligge på hjemmeskærmen. `manifest.json` +
+   `icons/` + Apple-specifikke `<meta>`-tags i `<head>`. Giver mening nu
+   siden appen har en stabil offentlig adresse (se Hosting) — husk at
+   slette og gen-tilføje et evt. gammelt hjemmeskærm-ikon der blev lavet
+   før manifestet fandtes.
+
+Roadmappet er dermed gennemført. Videre arbejde er ad hoc-forbedringer,
+ikke en fast rækkefølge længere.
 
 Ikke på roadmappet: AI-genererede outfits, brugerkonti, deling.
 
