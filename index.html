@@ -80,13 +80,11 @@
   .slot{
     position:relative;
     height:var(--slot-h);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    container-type:size;      /* goer cqw/cqh tilgaengelig til at kompensere for rotationen */
+    display:grid;
+    place-items:center;        /* saa gammelt og nyt billede kan ligge oveni hinanden under en crossfade */
+    container-type:size;       /* goer cqw/cqh tilgaengelig til at kompensere for rotationen */
     border-radius:10px;
-    transition:box-shadow .15s ease;
-    touch-action:pan-y;       /* lader lodret scroll virke, men frigiver vandret swipe til JS */
+    touch-action:pan-y;        /* lader lodret scroll virke, men frigiver vandret swipe til JS */
   }
 
   /* De brede raekker faar mere hoejde, saa billederne fylder bedre ud i pladsen. */
@@ -98,27 +96,24 @@
   .slot[data-cat="shoes"]{grid-area:shoes;height:var(--slot-h-wide)}
 
   .slot img.garment{
+    grid-area:1 / 1;          /* stabler gammelt og nyt billede oveni hinanden under en crossfade */
     max-width:100%;
     max-height:100%;
     object-fit:contain;      /* holder proportionerne uanset billedstoerrelse */
     display:block;
     border-radius:8px;       /* pynter paa firkantede JPG'er, usynlig paa fritlagte PNG'er */
     filter:drop-shadow(0 6px 10px rgba(23,24,26,.10));
-    transition:opacity .22s ease-out, transform .22s ease-out;
+    transition:opacity .32s ease;
   }
 
-  .slot.swapping img.garment{opacity:0;transform:translateY(6px)}
+  .slot img.garment.entering,
+  .slot img.garment.leaving{opacity:0}
 
   /* Alt toej udover sko er fotograferet paa siden, saa det roteres 90 grader op. */
   .slot:not([data-cat="shoes"]) img.garment{
     max-width:100cqh;
     max-height:100cqw;
     transform:rotate(90deg);
-  }
-
-  .slot:not([data-cat="shoes"]).swapping img.garment{
-    opacity:0;
-    transform:rotate(90deg) translateY(6px);
   }
 
   .slot.empty{border:1px dashed var(--line);border-radius:10px}
@@ -531,25 +526,42 @@ function buildOutfit(){
   return next;
 }
 
-const SWAP_FADE_MS = 220;   // skal matche transition-varigheden for img.garment i CSS'en
+const SWAP_FADE_MS = 320;   // skal matche transition-varigheden for img.garment i CSS'en
 
 function renderSlot(slot, item){
-  slot.classList.add("swapping");
-  setTimeout(() => {
-    slot.querySelector("img.garment")?.remove();
-    if (item){
-      const img = new Image();
-      img.className = "garment";
-      img.src = item.image;
-      img.alt = item.name;
-      slot.append(img);
-      slot.classList.remove("empty");
-      void img.offsetWidth;              // tving reflow, saa fade-in starter fra den skjulte tilstand
-    } else {
-      slot.classList.add("empty");       // fx ingen jakke naar det er varmt
+  const oldImg = slot.querySelector("img.garment");
+
+  if (!item){
+    if (oldImg){
+      oldImg.classList.add("leaving");
+      setTimeout(() => oldImg.remove(), SWAP_FADE_MS);
     }
-    slot.classList.remove("swapping");
-  }, SWAP_FADE_MS);
+    slot.classList.add("empty");         // fx ingen jakke naar det er varmt
+    return;
+  }
+
+  slot.classList.remove("empty");
+
+  const newImg = new Image();
+  newImg.className = "garment entering";
+  newImg.alt = item.name;
+
+  let revealed = false;
+  const reveal = () => {
+    if (revealed) return;
+    revealed = true;
+    void newImg.offsetWidth;             // tving reflow, saa fade-in starter fra den skjulte tilstand
+    newImg.classList.remove("entering");
+    if (oldImg){
+      oldImg.classList.add("leaving");   // gammelt og nyt billede krydsblendes samtidig
+      setTimeout(() => oldImg.remove(), SWAP_FADE_MS);
+    }
+  };
+
+  newImg.addEventListener("load", reveal, { once: true });
+  newImg.src = item.image;
+  slot.append(newImg);
+  if (newImg.complete) reveal();         // allerede indlaest/cachet, ingen grund til at vente
 }
 
 function renderMeta(outfit){
