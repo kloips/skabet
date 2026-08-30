@@ -16,8 +16,7 @@
     --ink-soft:#6B6A66;
     --line:#E3E1DB;
     --accent:#1F4D3D;
-    --slot-h:135px;
-    --slot-h-wide:185px;
+    --slot-h:185px;
     --radius:14px;
   }
 
@@ -61,20 +60,21 @@
 
   main{flex:1;padding:0 20px 20px}
 
-  /* Flat-lay: jakke oeverst, troeje og t-shirt side om side, bukser og sko nederst. */
+  /* Flat-lay: jakke, troeje, t-shirt, bukser og sko i hver sin fulde raekke. */
   .lay{
     background:var(--card);
     border:1px solid var(--line);
     border-radius:var(--radius);
     padding:18px 16px;
     display:grid;
-    grid-template-columns:1fr 1fr;
+    grid-template-columns:1fr;
     grid-template-areas:
-      "jacket jacket"
-      "mid top"
-      "bottom bottom"
-      "shoes shoes";
-    gap:10px 14px;
+      "jacket"
+      "mid"
+      "top"
+      "bottom"
+      "shoes";
+    gap:10px;
   }
 
   .slot{
@@ -84,16 +84,13 @@
     place-items:center;        /* saa gammelt og nyt billede kan ligge oveni hinanden under en crossfade */
     container-type:size;       /* goer cqw/cqh tilgaengelig til at kompensere for rotationen */
     border-radius:10px;
-    touch-action:pan-y;        /* lader lodret scroll virke, men frigiver vandret swipe til JS */
   }
 
-  /* De brede raekker faar mere hoejde, saa billederne fylder bedre ud i pladsen. */
-  .slot[data-cat="outerwear"]{grid-area:jacket;height:var(--slot-h-wide)}
-  /* Troejen laegger sig en lille smule ovenpaa t-shirten, som paa et rigtigt flat-lay. */
-  .slot[data-cat="mid"]{grid-area:mid;margin-right:-18px;z-index:2}
+  .slot[data-cat="outerwear"]{grid-area:jacket}
+  .slot[data-cat="mid"]{grid-area:mid}
   .slot[data-cat="top"]{grid-area:top}
-  .slot[data-cat="bottom"]{grid-area:bottom;height:var(--slot-h-wide)}
-  .slot[data-cat="shoes"]{grid-area:shoes;height:var(--slot-h-wide)}
+  .slot[data-cat="bottom"]{grid-area:bottom}
+  .slot[data-cat="shoes"]{grid-area:shoes}
 
   .slot img.garment{
     grid-area:1 / 1;          /* stabler gammelt og nyt billede oveni hinanden under en crossfade */
@@ -118,7 +115,7 @@
 
   .slot.empty{border:1px dashed var(--line);border-radius:10px}
 
-  /* Laase-ikon i hjoernet af hvert slot. Skift af toej sker ved at swipe henover billedet. */
+  /* Laase-ikon i hjoernet, og pile i siderne til at skifte toej. */
   .icon-btn{
     position:absolute;
     top:6px;
@@ -141,15 +138,26 @@
     width:100%;
     height:100%;
     padding:5px;
-    object-fit:contain;      /* viser hele laasen i stedet for at beskaere den */
+    object-fit:contain;      /* viser hele ikonet i stedet for at beskaere det */
   }
 
   .icon-btn:active{transform:scale(.94)}
 
-  /* Troejen laegger sig til venstre, saa ikonet ogsaa rykkes til venstre for ikke at overlappe t-shirten. */
-  .slot[data-cat="mid"] .icon-btn{right:auto;left:6px}
-
   .lock-btn[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 2px var(--ink)}
+
+  /* Pilene sidder lodret centreret i hver side af billedet. */
+  .nav-btn{
+    top:50%;
+    transform:translateY(-50%);
+    z-index:4;
+  }
+
+  .nav-btn:active{transform:translateY(-50%) scale(.94)}
+
+  .nav-prev{left:6px;right:auto}
+  .nav-next{right:6px}
+
+  .nav-prev img{transform:scaleX(-1)}
 
   .meta{
     margin:14px 2px 0;
@@ -270,18 +278,28 @@
   <div class="lay" id="lay">
     <div class="slot" data-cat="outerwear">
       <button class="icon-btn lock-btn" type="button" data-action="lock" aria-label="Lås jakke" aria-pressed="false"><img src="img/lock-icon.jpg" alt=""></button>
+      <button class="icon-btn nav-btn nav-prev" type="button" data-action="prev" aria-label="Forrige jakke"><img src="img/pil.jpg" alt=""></button>
+      <button class="icon-btn nav-btn nav-next" type="button" data-action="next" aria-label="Næste jakke"><img src="img/pil.jpg" alt=""></button>
     </div>
     <div class="slot" data-cat="top">
       <button class="icon-btn lock-btn" type="button" data-action="lock" aria-label="Lås overdel" aria-pressed="false"><img src="img/lock-icon.jpg" alt=""></button>
+      <button class="icon-btn nav-btn nav-prev" type="button" data-action="prev" aria-label="Forrige overdel"><img src="img/pil.jpg" alt=""></button>
+      <button class="icon-btn nav-btn nav-next" type="button" data-action="next" aria-label="Næste overdel"><img src="img/pil.jpg" alt=""></button>
     </div>
     <div class="slot" data-cat="mid">
       <button class="icon-btn lock-btn" type="button" data-action="lock" aria-label="Lås trøje" aria-pressed="false"><img src="img/lock-icon.jpg" alt=""></button>
+      <button class="icon-btn nav-btn nav-prev" type="button" data-action="prev" aria-label="Forrige trøje"><img src="img/pil.jpg" alt=""></button>
+      <button class="icon-btn nav-btn nav-next" type="button" data-action="next" aria-label="Næste trøje"><img src="img/pil.jpg" alt=""></button>
     </div>
     <div class="slot" data-cat="bottom">
       <button class="icon-btn lock-btn" type="button" data-action="lock" aria-label="Lås bukser" aria-pressed="false"><img src="img/lock-icon.jpg" alt=""></button>
+      <button class="icon-btn nav-btn nav-prev" type="button" data-action="prev" aria-label="Forrige bukser"><img src="img/pil.jpg" alt=""></button>
+      <button class="icon-btn nav-btn nav-next" type="button" data-action="next" aria-label="Næste bukser"><img src="img/pil.jpg" alt=""></button>
     </div>
     <div class="slot" data-cat="shoes">
       <button class="icon-btn lock-btn" type="button" data-action="lock" aria-label="Lås sko" aria-pressed="false"><img src="img/lock-icon.jpg" alt=""></button>
+      <button class="icon-btn nav-btn nav-prev" type="button" data-action="prev" aria-label="Forrige sko"><img src="img/pil.jpg" alt=""></button>
+      <button class="icon-btn nav-btn nav-next" type="button" data-action="next" aria-label="Næste sko"><img src="img/pil.jpg" alt=""></button>
     </div>
   </div>
   <div class="meta" id="meta"></div>
@@ -622,14 +640,20 @@ favoritesList.addEventListener("click", e => {
 
 lay.addEventListener("click", e => {
   const btn = e.target.closest(".icon-btn");
-  if (!btn || btn.dataset.action !== "lock") return;
+  if (!btn) return;
   const slot = btn.closest(".slot");
   const cat  = slot.dataset.cat;
   if (!current[cat]) return;               // intet toej i slotten
 
-  const isLocked = !lockedCats.has(cat);
-  lockedCats[isLocked ? "add" : "delete"](cat);
-  btn.setAttribute("aria-pressed", String(isLocked));
+  if (btn.dataset.action === "lock"){
+    const isLocked = !lockedCats.has(cat);
+    lockedCats[isLocked ? "add" : "delete"](cat);
+    btn.setAttribute("aria-pressed", String(isLocked));
+    return;
+  }
+
+  if (btn.dataset.action === "prev") cycleSlot(slot, -1);
+  if (btn.dataset.action === "next") cycleSlot(slot, 1);
 });
 
 /* Skalerer et billede ned via canvas, saa det fylder mindre i localStorage.
@@ -684,35 +708,20 @@ addForm.addEventListener("submit", async e => {
   addDialog.close();
 });
 
-function rerollSlot(slot){
+/* Pilene blader frem/tilbage gennem den paagaeldende kategoris toej. */
+function cycleSlot(slot, direction){
   const cat = slot.dataset.cat;
   if (!current[cat] || lockedCats.has(cat)) return;   // intet toej, eller laast
-  current[cat] = pick(cat, current[cat].id);
+  const pool = items.filter(i => i.category === cat);
+  if (pool.length <= 1) return;
+  const idx     = pool.findIndex(i => i.id === current[cat].id);
+  const nextIdx = (idx + direction + pool.length) % pool.length;
+  current[cat] = pool[nextIdx];
   renderSlot(slot, current[cat]);
   renderMeta(current);
   saveHistory(current);
   updateFavoriteButton();
 }
-
-/* Swipe henover et stykke toej skifter det ud med noget andet i samme kategori. */
-const SWIPE_MIN_PX = 40;
-let swipeStart = null;
-
-lay.addEventListener("pointerdown", e => {
-  const slot = e.target.closest(".slot");
-  if (!slot || e.target.closest(".icon-btn")) return;
-  swipeStart = { slot, x: e.clientX, y: e.clientY };
-});
-
-lay.addEventListener("pointerup", e => {
-  if (!swipeStart) return;
-  const { slot, x, y } = swipeStart;
-  swipeStart = null;
-  const dx = e.clientX - x;
-  const dy = e.clientY - y;
-  if (Math.abs(dx) < SWIPE_MIN_PX || Math.abs(dx) < Math.abs(dy)) return;   // for lille eller mest lodret
-  rerollSlot(slot);
-});
 
 async function init(){
   const w = await fetchWeather();
