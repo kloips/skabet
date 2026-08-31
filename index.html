@@ -26,6 +26,13 @@
     --h-top:110px;
     --h-bottom:170px;
     --h-shoes:50px;
+    /* Lodret placering af billedet i sin boks. 0px = centreret.
+       Negativt tal = flyt op, positivt tal = flyt ned. */
+    --y-jacket:-20px;
+    --y-mid:0px;
+    --y-top:0px;
+    --y-bottom:0px;
+    --y-shoes:0px;
     --radius:14px;
   }
 
@@ -74,7 +81,7 @@
     background:var(--card);
     border:1px solid var(--line);
     border-radius:var(--radius);
-    padding:0px 0px 0px;    /* mindre luft foroven, saa jakken sidder taettere paa kortets kant */
+    padding:14px 16px 18px;
     display:grid;
     grid-template-columns:1fr;
     grid-template-areas:
@@ -88,24 +95,30 @@
 
   .slot{
     position:relative;
-    display:grid;
-    place-items:center;        /* saa gammelt og nyt billede kan ligge oveni hinanden under en crossfade */
     container-type:size;       /* goer cqw/cqh tilgaengelig til at kompensere for rotationen */
     border-radius:10px;
   }
 
-  /* Hver kategori har sin egen hoejde - se --h-* i :root herover. */
+  /* Hver kategori har sin egen hoejde og lodrette placering - se --h-* og --y-* i :root herover. */
   .slot[data-cat="outerwear"]{grid-area:jacket;height:var(--h-jacket)}
   .slot[data-cat="mid"]{grid-area:mid;height:var(--h-mid)}
   .slot[data-cat="top"]{grid-area:top;height:var(--h-top)}
   .slot[data-cat="bottom"]{grid-area:bottom;height:var(--h-bottom)}
   .slot[data-cat="shoes"]{grid-area:shoes;height:var(--h-shoes)}
 
+  .slot[data-cat="outerwear"] img.garment{top:calc(50% + var(--y-jacket))}
+  .slot[data-cat="mid"]       img.garment{top:calc(50% + var(--y-mid))}
+  .slot[data-cat="top"]       img.garment{top:calc(50% + var(--y-top))}
+  .slot[data-cat="bottom"]    img.garment{top:calc(50% + var(--y-bottom))}
+  .slot[data-cat="shoes"]     img.garment{top:calc(50% + var(--y-shoes))}
+
   .slot img.garment{
-    grid-area:1 / 1;          /* stabler gammelt og nyt billede oveni hinanden under en crossfade */
+    position:absolute;        /* gammelt og nyt billede ligger oveni hinanden under en crossfade */
+    left:50%;
+    top:50%;                  /* overskrives per kategori herover */
     width:100cqh;             /* faste maal (ikke max-*) - cqw/cqh byttet om fordi billedet roteres 90 grader */
     height:100cqw;            /* undgaar en uklar Safari-opfoersel hvor max-width/max-height ikke altid klemmer ned */
-    transform:rotate(90deg);
+    transform:translate(-50%,-50%) rotate(90deg);
     object-fit:contain;      /* holder proportionerne inden for den faste boks */
     display:block;
     border-radius:8px;       /* pynter paa firkantede JPG'er, usynlig paa fritlagte PNG'er */
