@@ -33,6 +33,17 @@
     --y-top:0px;
     --y-bottom:0px;
     --y-shoes:0px;
+    /* Stoerrelse og lodret placering af laase- og pil-ikonerne, samme princip som h- og y-variablerne herover. */
+    --icon-jacket:36px;
+    --icon-mid:36px;
+    --icon-top:36px;
+    --icon-bottom:36px;
+    --icon-shoes:36px;
+    --icon-y-jacket:0px;
+    --icon-y-mid:0px;
+    --icon-y-top:0px;
+    --icon-y-bottom:0px;
+    --icon-y-shoes:0px;
     --radius:14px;
   }
 
@@ -160,6 +171,13 @@
   .icon-btn:active{transform:scale(.94)}
 
   .lock-btn[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 2px var(--ink)}
+
+  /* Stoerrelse og lodret nudge af laase-/pil-ikonerne, per kategori. */
+  .slot[data-cat="outerwear"] .icon-btn{width:var(--icon-jacket);height:var(--icon-jacket);margin-top:var(--icon-y-jacket)}
+  .slot[data-cat="mid"]       .icon-btn{width:var(--icon-mid);height:var(--icon-mid);margin-top:var(--icon-y-mid)}
+  .slot[data-cat="top"]       .icon-btn{width:var(--icon-top);height:var(--icon-top);margin-top:var(--icon-y-top)}
+  .slot[data-cat="bottom"]    .icon-btn{width:var(--icon-bottom);height:var(--icon-bottom);margin-top:var(--icon-y-bottom)}
+  .slot[data-cat="shoes"]     .icon-btn{width:var(--icon-shoes);height:var(--icon-shoes);margin-top:var(--icon-y-shoes)}
 
   /* Pilene sidder lodret centreret i hver side af billedet. */
   .nav-btn{
