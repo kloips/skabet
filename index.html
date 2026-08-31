@@ -102,10 +102,10 @@
 
   .slot img.garment{
     grid-area:1 / 1;          /* stabler gammelt og nyt billede oveni hinanden under en crossfade */
-    max-width:100cqh;         /* cqw/cqh byttet om, fordi billedet roteres 90 grader herunder */
-    max-height:100cqw;
+    width:100cqh;             /* faste maal (ikke max-*) - cqw/cqh byttet om fordi billedet roteres 90 grader */
+    height:100cqw;            /* undgaar en uklar Safari-opfoersel hvor max-width/max-height ikke altid klemmer ned */
     transform:rotate(90deg);
-    object-fit:contain;      /* holder proportionerne uanset billedstoerrelse */
+    object-fit:contain;      /* holder proportionerne inden for den faste boks */
     display:block;
     border-radius:8px;       /* pynter paa firkantede JPG'er, usynlig paa fritlagte PNG'er */
     filter:drop-shadow(0 6px 10px rgba(23,24,26,.10));
