@@ -8,10 +8,11 @@ ingen brugere ud over mig, ingen login.
 
 ## Status lige nu
 
-Statisk side, hostet live på GitHub Pages (se Hosting). Stadig én HTML-fil
-med inline CSS og vanilla JS — ingen build, ingen npm-dependencies, ingen
-server, ingen database. Kan stadig åbnes lokalt ved at dobbeltklikke på
-`index.html`, men bruges i praksis via den offentlige adresse.
+Statisk side, hostet live på GitHub Pages (se Hosting). Tre filer —
+`index.html` (markup), `style.css`, `script.js` — ingen build, ingen
+npm-dependencies, ingen server, ingen database. Kan stadig åbnes lokalt
+ved at dobbeltklikke på `index.html`, men bruges i praksis via den
+offentlige adresse.
 
 Roadmappets seks trin er alle gennemført (database er bevidst sprunget
 over, se Roadmap). Det virker. Næste skridt er ikke at bygge om, men at
@@ -21,7 +22,9 @@ forbedre i små trin.
 
 ```
 skabet/
-  index.html          hele appen: markup, CSS og JS i én fil
+  index.html          markup, linker til style.css og script.js
+  style.css           al CSS
+  script.js           al JS
   manifest.json        PWA-manifest til "Føj til hjemmeskærm"
   icon-source.svg       kilde-SVG til hjemmeskærm-ikonet (groent "S")
   icons/                genererede PNG-ikoner (192, 512, apple-touch-icon)
@@ -29,18 +32,22 @@ skabet/
     lock-icon.jpg       laase-ikon (bruges)
     pil.jpg             pil-ikon til skift-knapperne (bruges, zoomet ind i CSS)
     next-icon.jpg        gammelt "skift"-ikon fra foer swipe/pile - ubrugt
-    outerwear-*.png, mid-*.png, top-*.png, bottom-*.png   fritlagte PNG'er
-    shoes-*.JPG          stadig JPG, se Kendte problemer
+    outerwear-*.png, mid-*.png, top-*.png, bottom-*.png, shoes-*.png   fritlagte PNG'er
+    shorts-*.png          shorts-pulje, se "Sådan virker logikken"
     original-jpg/       de oprindelige fotos, git-ignoreret, bruges ikke af appen
   CLAUDE.md
 ```
+
+Filerne er en simpel 3-vejs opdeling (HTML/CSS/JS) af det der tidligere var
+én fil — intet build-trin tilføjet, `index.html` linker bare til de to andre
+via `<link rel="stylesheet">` og `<script src>`.
 
 ## Datamodel
 
 Tøjet kommer fra to kilder, som laegges sammen til ét `items`-array ved
 opstart (`rebuildItems()`):
 
-1. **Hardcodet** i objektet `files` øverst i `<script>` i `index.html`:
+1. **Hardcodet** i objektet `files` øverst i `script.js`:
    ```js
    const files = {
      "top-1.png": "Sort t-shirt",
@@ -54,7 +61,7 @@ opstart (`rebuildItems()`):
    på den enhed/browser det er tilføjet fra. Billedet skaleres til maks
    1000px og gemmes som PNG (bevarer transparens) via `resizeImage()`.
 
-Der er præcis fem gyldige kategorier:
+Der er fem slots i layoutet:
 
 | Kategori    | Slot i layoutet   |
 |-------------|-------------------|
@@ -64,10 +71,13 @@ Der er præcis fem gyldige kategorier:
 | `bottom`    | bukser, jeans     |
 | `shoes`     | sko, støvler      |
 
-Kategorinavnene er hardcodet flere steder: i `data-cat` på hvert `.slot`,
-i `CATS`-arrayet i JS, i `grid-template-areas` i `.lay` (CSS), og i
-kategori-selecten i tilføj-formularen. Ændrer du et af dem, skal alle
-steder rettes.
+Derudover findes en sjette pulje, `shorts`, der IKKE har sit eget slot —
+se "Sådan virker logikken" for hvordan den bruges.
+
+Kategorinavnene er hardcodet flere steder: i `data-cat` på hvert `.slot`
+(`index.html`), i `CATS`-arrayet (`script.js`), i `grid-template-areas` i
+`.lay` (`style.css`), og i kategori-selecten i tilføj-formularen
+(`index.html`). Ændrer du et af dem, skal alle steder rettes.
 
 ## Sådan virker logikken
 
@@ -106,6 +116,23 @@ Slots uden tøj rendres som stiplede felter i stedet for at blive skjult
 (sker i praksis ikke længere, siden alle fem kategorier altid vælges,
 men koden er der stadig som sikkerhedsnet).
 
+**Shorts:** over 22 grader skifter `buildOutfit()` puljen for `bottom`-slottet
+fra kategorien `bottom` til `shorts` (se kommentaren ved `benKat` i
+`buildOutfit()`) — selve slottet hedder stadig `bottom`, der findes ikke
+noget separat shorts-slot i layoutet.
+
+**Størrelse og placering per kategori:** hver af de fem kategorier har sine
+egne CSS custom properties i `:root` (`style.css`) til både tøjbilledet og
+ikonerne, uafhængigt af hinanden:
+- `--h-<kategori>` (boks-højde) og `--y-<kategori>` (lodret placering af
+  billedet i boksen, 0px = centreret, negativt = op)
+- `--lock-<kategori>` / `--lock-y-<kategori>` (låse-ikonets størrelse/placering)
+- `--arrow-<kategori>` / `--arrow-y-<kategori>` (pil-ikonernes størrelse/placering)
+
+hvor `<kategori>` er `jacket`, `mid`, `top`, `bottom` eller `shoes`. Det er
+den letteste måde at justere udseendet af én kategori uden at påvirke de
+andre.
+
 ## Konventioner
 
 - Vanilla JS. Ingen frameworks, ingen npm, intet build-trin til selve
@@ -113,8 +140,9 @@ men koden er der stadig som sikkerhedsnet).
   (GitHub CLI til deploy, `rsvg-convert` til at generere ikoner) — ikke
   en runtime-dependency for appen selv. Spørg før du introducerer noget
   der ændrer på det.
-- Alt bliver i `index.html` indtil filen bliver uoverskuelig. Så splitter
-  vi, ikke før.
+- Tre filer (`index.html`/`style.css`/`script.js`) — splittet fra én fil
+  da den blev for stor til nemt at navigere. Splitter vi yderligere, skal
+  det være fordi en af de tre er blevet uoverskuelig, ikke på forhånd.
 - CSS-variabler til farver og mål, defineret i `:root`. Ingen hardcodede
   hex-værdier længere nede i filen.
 - Kommentarer i koden er på dansk uden æ, ø og å.
@@ -131,20 +159,23 @@ men koden er der stadig som sikkerhedsnet).
   blive drejet forkert af denne fælles regel — ret i så fald selve
   billedfilen (rotér den), ikke CSS'en.
 - Skifter du indholdet af en billedfil UDEN at ændre filnavnet (fx retter
-  en fejl som ovenstående), så bump `ASSET_VERSION` i `index.html` (lige
+  en fejl som ovenstående), så bump `ASSET_VERSION` i `script.js` (lige
   over `builtInItems`). Ellers bliver den gamle udgave siddende fast i
-  Safaris cache på telefonen, selvom den nye fil er pushet.
+  Safaris cache på telefonen, selvom den nye fil er pushet. Det samme
+  gælder efter en større CSS/JS-ændring — Safari kan cache `style.css`/
+  `script.js` selv, ikke kun billeder (Indstillinger → Safari → Avanceret →
+  Webstedsdata → slet, for at tvinge en frisk hentning under aktiv udvikling).
 - Tøj-billedet (det faktiske billede af en genstand) har altid klassen
   `garment`, adskilt fra ikon-billeder (lås/pil), så CSS-reglerne for
   rotation/størrelse/crossfade ikke ved et uheld rammer ikonerne.
 
 ## Kendte problemer
 
-- `shoes-1` og `shoes-2` er stadig JPG. macOS' baggrundsfjernelse kunne ikke
-  finde skoene i billedet, fordi de er fotograferet for langt væk mod et
-  rodet underlag. Løsningen er at fotografere dem om, ikke at rette i kode.
-- Fotos er taget på en seng i blandet lys. Skalaen mellem tøjstykkerne er
-  derfor ikke konsistent. Rettes ved at fotografere om, ikke i CSS.
+- Alle billeder er skiftet ud (ny fotoomgang) og auto-beskåret til deres
+  faktiske indhold, hvilket løste det meste af den tidligere skala-uro
+  mellem tøjstykker fotograferet på forskellig afstand. Reel fysisk
+  størrelsesforskel (en jakke fylder mere end et t-shirt) er stadig korrekt
+  og skal ikke rettes.
 
 ## Roadmap
 
