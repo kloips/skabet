@@ -365,17 +365,88 @@
    Tilfoej en ny linje naar du fotograferer mere.
 ----------------------------------------------------------------*/
 const files = {
-  "outerwear-1.png": "Brun jakke",
-  "outerwear-2.png": "Sort jakke",
+  "outerwear-3.png":  "Ternet flannelskjorte, grå og hvid",
+  "outerwear-4.png":  "Mørkeblå fløjlsovershirt",
+  "outerwear-5.png":  "Olivengrøn overshirt med brystlommer",
+  "outerwear-6.png":  "Grå vindjakke med hætte",
+  "outerwear-7.png":  "Sort dunjakke med hætte",
+  "outerwear-8.png":  "Sort lynlåsjakke med ribkant",
+  "outerwear-9.png":  "Brun overshirt med trykknapper",
+  "outerwear-10.png": "Lysegrå vindjakke med hætte",
+  "outerwear-11.png": "Mørkebrun quiltet bomber",
+  "outerwear-12.png": "Brun jakke med hvide syninger",
+  "outerwear-13.png": "Koksgrå jakke med krave",
+  "outerwear-14.png": "Sort lang frakke",
+  "outerwear-15.png": "Grå jakke med hætte og klaplommer",
+  "outerwear-16.png": "Lyseblå denimskjortejakke",
 
-  "mid-1.png":       "Sort sweatshirt",
-  "mid-2.png":       "Brun strik",
+  "mid-3.png":  "Mørkegrøn sweatshirt",
+  "mid-4.png":  "Olivengrøn hoodie med lynlås",
+  "mid-5.png":  "Grå hoodie med tryk",
+  "mid-6.png":  "Navy GAP hoodie med lynlås",
+  "mid-7.png":  "Lysegrå hoodie",
+  "mid-8.png":  "Grå hoodie med lynlås",
+  "mid-9.png":  "Ternet skjorte, sort og hvid",
+  "mid-10.png": "Mørkegrå strik",
+  "mid-11.png": "Lysegrå strik",
+  "mid-12.png": "Lysegrå sweatshirt",
+  "mid-13.png": "Grøn sweatshirt",
+  "mid-14.png": "Sort HK sweatshirt med tryk",
+  "mid-15.png": "Sort strik",
+  "mid-16.png": "Navy Pull&Bear sweatshirt",
+  "mid-17.png": "Brun strik",
+  "mid-18.png": "Navy strik med lynlås",
+  "mid-19.png": "Sort sweatshirt",
+  "mid-20.png": "Lysegrå strik",
+  "mid-21.png": "Mørkeblå strik",
+  "mid-22.png": "Sort ribstrik",
+  "mid-23.png": "Mørkeblå stribet skjorte",
+  "mid-24.png": "Mørkeblå ternet skjorte",
+  "mid-25.png": "Blå skjorte",
+  "mid-26.png": "Sort BALL sweatshirt",
+  "mid-27.png": "Ternet flannelskjorte, grøn og hvid",
+  "mid-28.png": "Lyseblå ternet skjorte",
+  "mid-29.png": "Beige ternet skjorte",
+  "mid-30.png": "Blå ternet skjorte",
+  "mid-31.png": "Ternet flannelskjorte, blå og hvid",
+  "mid-32.png": "Mørkeblå ternet flannelskjorte",
+  "mid-33.png": "Beige strik med lynlås",
 
-  "bottom-1.png":    "Grå bukser",
-  "bottom-2.png":    "Blå jeans",
+  "bottom-4.png":  "Sorte jeans",
+  "bottom-5.png":  "Brune habitbukser",
+  "bottom-6.png":  "Mørkeblå jeans",
+  "bottom-8.png":  "Creme jeans",
+  "bottom-9.png":  "Grå jeans",
+  "bottom-10.png": "Brungrå jeans",
+  "bottom-11.png": "Blå jeans",
+  "bottom-12.png": "Koksgrå jeans",
+  "bottom-13.png": "Sorte bukser, smalle",
+  "bottom-14.png": "Sorte bukser, brede",
+  "bottom-15.png": "Lysegrå bukser",
+  "bottom-16.png": "Lyseblå jeans",
+  "bottom-18.png": "Støvet blå jeans",
 
-  "shoes-1.JPG":     "Sneakers",
-  "shoes-2.JPG":     "Sko",
+  "shorts-1.png":  "Mørke denimshorts",
+  "shorts-2.png":  "Sorte denimshorts",
+  "shorts-3.png":  "Grå denimshorts",
+  "shorts-4.png":  "Lyseblå denimshorts",
+
+  "shoes-3.png":  "Hvide Nike Cortez",
+  "shoes-4.png":  "Sorte loafers med kvast",
+  "shoes-5.png":  "Sorte loafers",
+  "shoes-6.png":  "Sorte Nike sneakers",
+  "shoes-7.png":  "Adidas Stan Smith, hvid og grøn",
+  "shoes-8.png":  "Asics løbesko, navy og grå",
+  "shoes-9.png":  "Asics Gel-Lyte III, blå og grå",
+  "shoes-10.png": "Timberland bådsko, brune",
+  "shoes-11.png": "Converse One Star, olivengrøn ruskind",
+  "shoes-12.png": "Adidas Samba, brune",
+  "shoes-13.png": "Nike P-6000, hvid og grå",
+  "shoes-14.png": "Adidas Gazelle Indoor, grøn",
+  "shoes-15.png": "Asics sneakers, grå og hvid",
+  "shoes-16.png": "Grå ruskindssko",
+  "shoes-17.png": "Adidas Superstar, hvid og grøn",
+  "shoes-18.png": "Adidas Spezial, sort",
 
   "top-4.png":  "Grå t-shirt",
   "top-5.png":  "Lysegrå t-shirt",
@@ -466,7 +537,7 @@ const addName       = document.getElementById("addName");
 const addCancel     = document.getElementById("addCancel");
 const slots         = [...lay.querySelectorAll(".slot")];
 
-const CATS = ["outerwear", "mid", "top", "bottom", "shoes"];
+const CATS = ["outerwear", "mid", "top", "bottom", "shorts", "shoes"];
 
 const lockedCats = new Set();   // kategorier der skal beholde deres nuvaerende toej
 let current = {};
@@ -580,23 +651,32 @@ const pick = (cat, avoidId) => {
 };
 
 function buildOutfit(){
-  const history = loadHistory();
-  const today   = new Date().toISOString().slice(0, 10);
+  const history  = loadHistory();
+  const today    = new Date().toISOString().slice(0, 10);
   const isNewDay = history.date && history.date !== today;
 
+  // Over 22 grader traekkes shorts i stedet for lange bukser.
+  // Slottet hedder stadig "bottom" - det er kun puljen der skifter.
+  const benKat = (typeof temp === "number" && temp >= 22
+                  && items.some(i => i.category === "shorts"))
+                 ? "shorts"
+                 : "bottom";
+
   const wanted = {
-    top:       true,
-    bottom:    true,
-    shoes:     true,
-    mid:       true,
-    outerwear: true
+    top:       "top",
+    bottom:    benKat,
+    shoes:     "shoes",
+    mid:       "mid",
+    outerwear: "outerwear"
   };
+
   const next = {};
-  Object.keys(wanted).forEach(cat => {
-    if (lockedCats.has(cat) && current[cat]){
-      next[cat] = current[cat];
-    } else if (wanted[cat]){
-      next[cat] = pick(cat, isNewDay ? history[cat] : null);
+  Object.keys(wanted).forEach(slot => {
+    const kat = wanted[slot];
+    if (lockedCats.has(slot) && current[slot]){
+      next[slot] = current[slot];
+    } else {
+      next[slot] = pick(kat, isNewDay ? history[slot] : null);
     }
   });
   return next;
