@@ -74,7 +74,7 @@
     background:var(--card);
     border:1px solid var(--line);
     border-radius:var(--radius);
-    padding:18px 16px;
+    padding:4px 16px 18px;    /* mindre luft foroven, saa jakken sidder taettere paa kortets kant */
     display:grid;
     grid-template-columns:1fr;
     grid-template-areas:
@@ -95,7 +95,7 @@
   }
 
   /* Hver kategori har sin egen hoejde - se --h-* i :root herover. */
-  .slot[data-cat="outerwear"]{grid-area:jacket;height:var(--h-jacket);place-items:start center}
+  .slot[data-cat="outerwear"]{grid-area:jacket;height:var(--h-jacket)}
   .slot[data-cat="mid"]{grid-area:mid;height:var(--h-mid)}
   .slot[data-cat="top"]{grid-area:top;height:var(--h-top)}
   .slot[data-cat="bottom"]{grid-area:bottom;height:var(--h-bottom)}
