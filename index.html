@@ -33,17 +33,19 @@
     --y-top:0px;
     --y-bottom:0px;
     --y-shoes:0px;
-    /* Stoerrelse og lodret placering af laase- og pil-ikonerne, samme princip som h- og y-variablerne herover. */
-    --icon-jacket:36px;
-    --icon-mid:36px;
-    --icon-top:36px;
-    --icon-bottom:36px;
-    --icon-shoes:36px;
-    --icon-y-jacket:0px;
-    --icon-y-mid:0px;
-    --icon-y-top:0px;
-    --icon-y-bottom:0px;
-    --icon-y-shoes:0px;
+    /* Laase-ikon: stoerrelse og lodret placering, samme princip som h- og y-variablerne herover. */
+    --lock-jacket:36px;   --lock-y-jacket:0px;
+    --lock-mid:36px;      --lock-y-mid:0px;
+    --lock-top:36px;      --lock-y-top:0px;
+    --lock-bottom:36px;   --lock-y-bottom:0px;
+    --lock-shoes:26px;    --lock-y-shoes:-8px;   /* mindre og rykket op, saa den ikke gemmer sig bag pilene i den lave sko-boks */
+
+    /* Pil-ikoner: stoerrelse og lodret placering, uafhaengigt af laase-ikonet. */
+    --arrow-jacket:36px;  --arrow-y-jacket:0px;
+    --arrow-mid:36px;     --arrow-y-mid:0px;
+    --arrow-top:36px;     --arrow-y-top:0px;
+    --arrow-bottom:36px;  --arrow-y-bottom:0px;
+    --arrow-shoes:28px;   --arrow-y-shoes:8px;   /* mindre og rykket ned, vaek fra laase-ikonet */
     --radius:14px;
   }
 
@@ -172,12 +174,19 @@
 
   .lock-btn[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 2px var(--ink)}
 
-  /* Stoerrelse og lodret nudge af laase-/pil-ikonerne, per kategori. */
-  .slot[data-cat="outerwear"] .icon-btn{width:var(--icon-jacket);height:var(--icon-jacket);margin-top:var(--icon-y-jacket)}
-  .slot[data-cat="mid"]       .icon-btn{width:var(--icon-mid);height:var(--icon-mid);margin-top:var(--icon-y-mid)}
-  .slot[data-cat="top"]       .icon-btn{width:var(--icon-top);height:var(--icon-top);margin-top:var(--icon-y-top)}
-  .slot[data-cat="bottom"]    .icon-btn{width:var(--icon-bottom);height:var(--icon-bottom);margin-top:var(--icon-y-bottom)}
-  .slot[data-cat="shoes"]     .icon-btn{width:var(--icon-shoes);height:var(--icon-shoes);margin-top:var(--icon-y-shoes)}
+  /* Stoerrelse og lodret nudge af LAASE-ikonet, per kategori. */
+  .slot[data-cat="outerwear"] .lock-btn{width:var(--lock-jacket);height:var(--lock-jacket);margin-top:var(--lock-y-jacket)}
+  .slot[data-cat="mid"]       .lock-btn{width:var(--lock-mid);height:var(--lock-mid);margin-top:var(--lock-y-mid)}
+  .slot[data-cat="top"]       .lock-btn{width:var(--lock-top);height:var(--lock-top);margin-top:var(--lock-y-top)}
+  .slot[data-cat="bottom"]    .lock-btn{width:var(--lock-bottom);height:var(--lock-bottom);margin-top:var(--lock-y-bottom)}
+  .slot[data-cat="shoes"]     .lock-btn{width:var(--lock-shoes);height:var(--lock-shoes);margin-top:var(--lock-y-shoes)}
+
+  /* Stoerrelse og lodret nudge af PIL-ikonerne, per kategori - uafhaengigt af laasen. */
+  .slot[data-cat="outerwear"] .nav-btn{width:var(--arrow-jacket);height:var(--arrow-jacket);margin-top:var(--arrow-y-jacket)}
+  .slot[data-cat="mid"]       .nav-btn{width:var(--arrow-mid);height:var(--arrow-mid);margin-top:var(--arrow-y-mid)}
+  .slot[data-cat="top"]       .nav-btn{width:var(--arrow-top);height:var(--arrow-top);margin-top:var(--arrow-y-top)}
+  .slot[data-cat="bottom"]    .nav-btn{width:var(--arrow-bottom);height:var(--arrow-bottom);margin-top:var(--arrow-y-bottom)}
+  .slot[data-cat="shoes"]     .nav-btn{width:var(--arrow-shoes);height:var(--arrow-shoes);margin-top:var(--arrow-y-shoes)}
 
   /* Pilene sidder lodret centreret i hver side af billedet. */
   .nav-btn{
