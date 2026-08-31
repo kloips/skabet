@@ -22,6 +22,7 @@
     --line:#E3E1DB;
     --accent:#1F4D3D;
     --slot-h:140px;
+    --slot-h-large:170px;      /* jakke, troeje og bukser - lidt stoerre end resten */
     --radius:14px;
   }
 
@@ -93,10 +94,10 @@
   }
 
   /* Foerste raekke skal ikke rykkes op i kortets egen padding foroven. */
-  .slot[data-cat="outerwear"]{grid-area:jacket;margin-top:0}
-  .slot[data-cat="mid"]{grid-area:mid}
+  .slot[data-cat="outerwear"]{grid-area:jacket;margin-top:0;height:var(--slot-h-large)}
+  .slot[data-cat="mid"]{grid-area:mid;height:var(--slot-h-large)}
   .slot[data-cat="top"]{grid-area:top}
-  .slot[data-cat="bottom"]{grid-area:bottom}
+  .slot[data-cat="bottom"]{grid-area:bottom;height:var(--slot-h-large)}
   .slot[data-cat="shoes"]{grid-area:shoes}
 
   .slot img.garment{
