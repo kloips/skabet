@@ -198,16 +198,26 @@
   .nav-prev{left:6px;right:auto}
   .nav-next{right:6px}
 
-  /* Lille "nik" i pilens retning naar man trykker - styret fra JS,
-     da :active paa iOS ofte kraever en touch-lytter for at vise sig. */
+  /* Lille "fjeder"-hop i pilens retning naar man trykker - styret fra JS,
+     da :active paa iOS ofte kraever en touch-lytter for at vise sig.
+     Flere mellemtrin end et simpelt nik, saa den overskyder let og
+     fjedrer tilbage i stedet for bare at snappe. */
   @keyframes bump-left{
-    40%{transform:translateY(-50%) translateX(-6px) scale(.88)}
+    0%  {transform:translateY(-50%) translateX(0)    scale(1)}
+    25% {transform:translateY(-50%) translateX(-9px) scale(.86)}
+    55% {transform:translateY(-50%) translateX(2px)  scale(1.06)}
+    80% {transform:translateY(-50%) translateX(-1px) scale(.98)}
+    100%{transform:translateY(-50%) translateX(0)    scale(1)}
   }
   @keyframes bump-right{
-    40%{transform:translateY(-50%) translateX(6px) scale(.88)}
+    0%  {transform:translateY(-50%) translateX(0)   scale(1)}
+    25% {transform:translateY(-50%) translateX(9px) scale(.86)}
+    55% {transform:translateY(-50%) translateX(-2px) scale(1.06)}
+    80% {transform:translateY(-50%) translateX(1px) scale(.98)}
+    100%{transform:translateY(-50%) translateX(0)   scale(1)}
   }
-  .nav-prev.bump{animation:bump-left .28s ease}
-  .nav-next.bump{animation:bump-right .28s ease}
+  .nav-prev.bump{animation:bump-left .42s cubic-bezier(.22,.61,.36,1)}
+  .nav-next.bump{animation:bump-right .42s cubic-bezier(.22,.61,.36,1)}
 
   /* pil.jpg har en tynd kant om billedet - zoom ind saa kun selve pilen ses. */
   .nav-btn img{padding:0;transform:scale(2)}
