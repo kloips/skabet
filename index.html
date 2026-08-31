@@ -21,7 +21,7 @@
     --ink-soft:#6B6A66;
     --line:#E3E1DB;
     --accent:#1F4D3D;
-    --slot-h:100px;
+    --slot-h:140px;
     --radius:14px;
   }
 
@@ -89,9 +89,11 @@
     place-items:center;        /* saa gammelt og nyt billede kan ligge oveni hinanden under en crossfade */
     container-type:size;       /* goer cqw/cqh tilgaengelig til at kompensere for rotationen */
     border-radius:10px;
+    margin-top:-32px;          /* traekker raekken taettere paa den forrige, uden at billedet selv bliver mindre */
   }
 
-  .slot[data-cat="outerwear"]{grid-area:jacket}
+  /* Foerste raekke skal ikke rykkes op i kortets egen padding foroven. */
+  .slot[data-cat="outerwear"]{grid-area:jacket;margin-top:0}
   .slot[data-cat="mid"]{grid-area:mid}
   .slot[data-cat="top"]{grid-area:top}
   .slot[data-cat="bottom"]{grid-area:bottom}
