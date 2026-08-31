@@ -123,10 +123,17 @@ men koden er der stadig som sikkerhedsnet).
   Lav det ikke om til `cover`.
 - `.slot` er `display:grid` (ikke flex) med `container-type:size` — det
   er det der gør `cqw`/`cqh`-enhederne tilgængelige, som bruges til at
-  kompensere for at alt tøj udover sko er fotograferet på siden og roteres
-  90 grader i CSS (`transform:rotate(90deg)`). Almindelig `%`-baseret
-  `max-height` er upålidelig i et grid uden fast række-højde — brug cqw/cqh,
-  ikke `%`, til billedstørrelse i `.slot`.
+  kompensere for at alt tøj (også sko, siden seneste fotoomgang) er
+  fotograferet på siden og roteres 90 grader i CSS (`transform:rotate(90deg)`).
+  Almindelig `%`-baseret `max-height` er upålidelig i et grid uden fast
+  række-højde — brug cqw/cqh, ikke `%`, til billedstørrelse i `.slot`.
+  Et enkelt billede der er gemt allerede opret (i stedet for på siden) vil
+  blive drejet forkert af denne fælles regel — ret i så fald selve
+  billedfilen (rotér den), ikke CSS'en.
+- Skifter du indholdet af en billedfil UDEN at ændre filnavnet (fx retter
+  en fejl som ovenstående), så bump `ASSET_VERSION` i `index.html` (lige
+  over `builtInItems`). Ellers bliver den gamle udgave siddende fast i
+  Safaris cache på telefonen, selvom den nye fil er pushet.
 - Tøj-billedet (det faktiske billede af en genstand) har altid klassen
   `garment`, adskilt fra ikon-billeder (lås/pil), så CSS-reglerne for
   rotation/størrelse/crossfade ikke ved et uheld rammer ikonerne.

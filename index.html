@@ -484,11 +484,16 @@ const files = {
   "top-43.png": "Turkis/hvid stribet langærmet t-shirt"
 };
 
+/* Saet denne op naar et billede erstattes med et nyt UNDER SAMME filnavn
+   (fx efter en rettelse som denne). Ellers bliver den gamle udgave siddende
+   fast i Safaris cache paa telefonen, selvom filen er skiftet ud paa serveren. */
+const ASSET_VERSION = "20260831a";
+
 const builtInItems = Object.entries(files).map(([file, name], i) => ({
   id: i + 1,
   name,
   category: file.split("-")[0],
-  image: "img/" + file
+  image: "img/" + file + "?v=" + ASSET_VERSION
 }));
 
 /* Toej tilfoejet fra formularen. Gemmes i localStorage, saa det kun findes paa den enhed det er tilfoejet fra. */
