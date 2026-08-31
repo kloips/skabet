@@ -209,6 +209,7 @@ const weatherCodes = {
 /* Vejrkoder der taeller som regn (inkl. slud, byger og torden). */
 const REGN_KODER = new Set([51,53,55,56,57,61,63,65,66,67,80,81,82,95,96,99]);
 let regnvejr = false;
+let foersteSaet = true;   // regnjakke tvinges kun igennem paa dagens foerste saet
 
 async function fetchWeather(){
   try {
@@ -300,7 +301,7 @@ function updateFavoriteButton(){
 
 const pick = (cat, avoidId) => {
   let pool = items.filter(i => i.category === cat);
-  if (cat === "outerwear" && regnvejr){
+  if (cat === "outerwear" && regnvejr && foersteSaet){
     const regnjakker = pool.filter(i => i.regn);
     if (regnjakker.length) pool = regnjakker;   // ingen taggede jakker = alt er stadig i spil
   }
@@ -401,6 +402,7 @@ function render(outfit){
 
 function shuffle(){
   current = buildOutfit();
+  foersteSaet = false;   // herefter er alle jakker i spil igen
   render(current);
   saveHistory(current);
   updateFavoriteButton();
