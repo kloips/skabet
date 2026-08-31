@@ -15,9 +15,10 @@ const files = {
   "outerwear-11.png": "Mørkebrun quiltet bomber",
   "outerwear-12.png": "Brun jakke med hvide syninger",
   "outerwear-13.png": "Koksgrå jakke med krave",
-  "outerwear-14.png": "Sort lang frakke",
+  "outerwear-14.png": { navn: "Sort lang frakke", regn: true},
   "outerwear-15.png": "Grå jakke med hætte og klaplommer",
   "outerwear-16.png": "Lyseblå denimskjortejakke",
+  "outerwear-17.png":  { navn: "Grå vindjakke med hætte", regn: true },
 
   "mid-3.png":  "Mørkegrøn sweatshirt",
   "mid-4.png":  "Olivengrøn hoodie med lynlås",
@@ -134,12 +135,19 @@ const files = {
    fast i Safaris cache paa telefonen, selvom filen er skiftet ud paa serveren. */
 const ASSET_VERSION = "20260831b";
 
-const builtInItems = Object.entries(files).map(([file, name], i) => ({
-  id: i + 1,
-  name,
-  category: file.split("-")[0],
-  image: "img/" + file + "?v=" + ASSET_VERSION
-}));
+/* En vaerdi i files maa vaere enten ren tekst (kun navnet) eller et objekt
+   med ekstra oplysninger: { navn: "...", regn: true }. Begge dele virker,
+   saa toejet kan tagges lidt ad gangen. */
+const builtInItems = Object.entries(files).map(([file, value], i) => {
+  const data = typeof value === "string" ? { navn: value } : value;
+  return {
+    id: i + 1,
+    name: data.navn,
+    regn: data.regn === true,
+    category: file.split("-")[0],
+    image: "img/" + file + "?v=" + ASSET_VERSION
+  };
+});
 
 /* Toej tilfoejet fra formularen. Gemmes i localStorage, saa det kun findes paa den enhed det er tilfoejet fra. */
 const EXTRA_ITEMS_KEY = "skabet-extra-items";
@@ -197,6 +205,10 @@ const weatherCodes = {
   80:"byger", 81:"kraftige byger", 82:"voldsomme byger",
   95:"torden"
 };
+
+/* Vejrkoder der taeller som regn (inkl. slud, byger og torden). */
+const REGN_KODER = new Set([51,53,55,56,57,61,63,65,66,67,80,81,82,95,96,99]);
+let regnvejr = false;
 
 async function fetchWeather(){
   try {
@@ -288,6 +300,10 @@ function updateFavoriteButton(){
 
 const pick = (cat, avoidId) => {
   let pool = items.filter(i => i.category === cat);
+  if (cat === "outerwear" && regnvejr){
+    const regnjakker = pool.filter(i => i.regn);
+    if (regnjakker.length) pool = regnjakker;   // ingen taggede jakker = alt er stadig i spil
+  }
   if (avoidId != null && pool.length > 1){
     pool = pool.filter(i => i.id !== avoidId);   // undgaa gaarsdagens stykke naar der er et alternativ
   }
@@ -515,6 +531,7 @@ async function init(){
   const w = await fetchWeather();
   if (w){
     temp = w.max;                // hoejeste forventede temperatur i dag
+    regnvejr = REGN_KODER.has(w.weathercode);
     weatherEl.textContent = `${Math.round(w.min)}–${Math.round(w.max)}° · ${weatherCodes[w.weathercode] || "ukendt vejr"}`;
   }
   renderFavorites();
