@@ -204,20 +204,20 @@
      fjedrer tilbage i stedet for bare at snappe. */
   @keyframes bump-left{
     0%  {transform:translateY(-50%) translateX(0)    scale(1)}
-    25% {transform:translateY(-50%) translateX(-9px) scale(.86)}
+    25% {transform:translateY(-50%) translateX(-4px) scale(.86)}
     55% {transform:translateY(-50%) translateX(2px)  scale(1.06)}
     80% {transform:translateY(-50%) translateX(-1px) scale(.98)}
     100%{transform:translateY(-50%) translateX(0)    scale(1)}
   }
   @keyframes bump-right{
     0%  {transform:translateY(-50%) translateX(0)   scale(1)}
-    25% {transform:translateY(-50%) translateX(9px) scale(.86)}
+    25% {transform:translateY(-50%) translateX(4px) scale(.86)}
     55% {transform:translateY(-50%) translateX(-2px) scale(1.06)}
     80% {transform:translateY(-50%) translateX(1px) scale(.98)}
     100%{transform:translateY(-50%) translateX(0)   scale(1)}
   }
-  .nav-prev.bump{animation:bump-left .42s cubic-bezier(.22,.61,.36,1)}
-  .nav-next.bump{animation:bump-right .42s cubic-bezier(.22,.61,.36,1)}
+  .nav-prev.bump{animation:bump-left .72s cubic-bezier(.22,.61,.36,1)}
+  .nav-next.bump{animation:bump-right .72s cubic-bezier(.22,.61,.36,1)}
 
   /* pil.jpg har en tynd kant om billedet - zoom ind saa kun selve pilen ses. */
   .nav-btn img{padding:0;transform:scale(2)}
