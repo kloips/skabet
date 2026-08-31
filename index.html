@@ -21,8 +21,11 @@
     --ink-soft:#6B6A66;
     --line:#E3E1DB;
     --accent:#1F4D3D;
-    --slot-h:140px;
-    --slot-h-large:170px;      /* kun jakken - lidt stoerre end resten */
+    --h-jacket:130px;
+    --h-mid:115px;
+    --h-top:115px;
+    --h-bottom:140px;
+    --h-shoes:90px;
     --radius:14px;
   }
 
@@ -85,7 +88,6 @@
 
   .slot{
     position:relative;
-    height:var(--slot-h);
     display:grid;
     place-items:center;        /* saa gammelt og nyt billede kan ligge oveni hinanden under en crossfade */
     container-type:size;       /* goer cqw/cqh tilgaengelig til at kompensere for rotationen */
@@ -93,12 +95,12 @@
     margin-top:-32px;          /* traekker raekken taettere paa den forrige, uden at billedet selv bliver mindre */
   }
 
-  /* Foerste raekke skal ikke rykkes op i kortets egen padding foroven. */
-  .slot[data-cat="outerwear"]{grid-area:jacket;margin-top:0;height:var(--slot-h-large)}
-  .slot[data-cat="mid"]{grid-area:mid}
-  .slot[data-cat="top"]{grid-area:top}
-  .slot[data-cat="bottom"]{grid-area:bottom}
-  .slot[data-cat="shoes"]{grid-area:shoes}
+  /* Hver kategori har sin egen hoejde - se --h-* i :root herover. */
+  .slot[data-cat="outerwear"]{grid-area:jacket;margin-top:0;height:var(--h-jacket)}
+  .slot[data-cat="mid"]{grid-area:mid;height:var(--h-mid)}
+  .slot[data-cat="top"]{grid-area:top;height:var(--h-top)}
+  .slot[data-cat="bottom"]{grid-area:bottom;height:var(--h-bottom)}
+  .slot[data-cat="shoes"]{grid-area:shoes;height:var(--h-shoes)}
 
   .slot img.garment{
     grid-area:1 / 1;          /* stabler gammelt og nyt billede oveni hinanden under en crossfade */
