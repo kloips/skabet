@@ -21,8 +21,8 @@
   --lock-jacket:36px;   --lock-y-jacket:-2px;
   --lock-mid:36px;      --lock-y-mid:-2px;
   --lock-top:36px;      --lock-y-top:-6px;
-  --lock-bottom:36px;   --lock-y-bottom:0px;
-  --lock-shoes:36px;    --lock-y-shoes:-18px;   /* mindre og rykket op, saa den ikke gemmer sig bag pilene i den lave sko-boks */
+  --lock-bottom:36px;   --lock-y-bottom:-2px;
+  --lock-shoes:36px;    --lock-y-shoes:-22px;   /* mindre og rykket op, saa den ikke gemmer sig bag pilene i den lave sko-boks */
 
   /* Pil-ikoner: stoerrelse og lodret placering, uafhaengigt af laase-ikonet. */
   --arrow-jacket:36px;  --arrow-y-jacket:0px;
