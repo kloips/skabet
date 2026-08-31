@@ -92,11 +92,10 @@
     place-items:center;        /* saa gammelt og nyt billede kan ligge oveni hinanden under en crossfade */
     container-type:size;       /* goer cqw/cqh tilgaengelig til at kompensere for rotationen */
     border-radius:10px;
-    margin-top:-32px;          /* traekker raekken taettere paa den forrige, uden at billedet selv bliver mindre */
   }
 
   /* Hver kategori har sin egen hoejde - se --h-* i :root herover. */
-  .slot[data-cat="outerwear"]{grid-area:jacket;margin-top:0;height:var(--h-jacket)}
+  .slot[data-cat="outerwear"]{grid-area:jacket;height:var(--h-jacket)}
   .slot[data-cat="mid"]{grid-area:mid;height:var(--h-mid)}
   .slot[data-cat="top"]{grid-area:top;height:var(--h-top)}
   .slot[data-cat="bottom"]{grid-area:bottom;height:var(--h-bottom)}
