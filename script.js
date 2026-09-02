@@ -137,15 +137,21 @@ const files = {
    fast i Safaris cache paa telefonen, selvom filen er skiftet ud paa serveren. */
 const ASSET_VERSION = "20260831b";
 
+/* Paenhed gaar fra 1 (mest afslappet) til 5 (pusset op) og bruges til at
+   matche toejet med den valgte lejlighed. Toej uden en vaerdi lander paa
+   midten, saa det hverken favoriseres eller sorteres fra. */
+const STANDARD_PAENHED = 3;
+
 /* En vaerdi i files maa vaere enten ren tekst (kun navnet) eller et objekt
-   med ekstra oplysninger: { navn: "...", regn: true }. Begge dele virker,
-   saa toejet kan tagges lidt ad gangen. */
+   med ekstra oplysninger: { navn: "...", regn: true, paenhed: 4 }. Begge
+   dele virker, saa toejet kan tagges lidt ad gangen. */
 const builtInItems = Object.entries(files).map(([file, value], i) => {
   const data = typeof value === "string" ? { navn: value } : value;
   return {
     id: i + 1,
     name: data.navn,
     regn: data.regn === true,
+    paenhed: data.paenhed || STANDARD_PAENHED,
     category: file.split("-")[0],
     image: "img/" + file + "?v=" + ASSET_VERSION
   };
@@ -169,7 +175,9 @@ function saveExtraItems(list){
 let items = [];
 
 function rebuildItems(){
-  items = [...builtInItems, ...loadExtraItems()];
+  // Toej fra formularen har ingen paenhed - giv det midtervaerdien, saa det kan vaelges til alle lejligheder.
+  const extra = loadExtraItems().map(i => ({ paenhed: STANDARD_PAENHED, ...i }));
+  items = [...builtInItems, ...extra];
 }
 
 rebuildItems();
@@ -183,6 +191,7 @@ const favoritesEl   = document.getElementById("favorites");
 const favoritesList = document.getElementById("favoritesList");
 const favoriteBtn   = document.getElementById("favorite");
 const addItemBtn    = document.getElementById("addItemBtn");
+const occasionEl    = document.getElementById("occasion");
 const addDialog     = document.getElementById("addDialog");
 const addForm       = document.getElementById("addForm");
 const addPhoto      = document.getElementById("addPhoto");
@@ -301,12 +310,45 @@ function updateFavoriteButton(){
   favoriteBtn.textContent = isFav ? "★" : "☆";
 }
 
+/* Lejligheder. Hver enkelt er et interval paa paenhed - se filtrerPaaLejlighed()
+   for hvad der sker naar en kategori ikke har noget i intervallet. */
+const OCCASIONS = {
+  alle:        { navn: "Alt",         min: 1, max: 5 },
+  fint:        { navn: "Fint tøj",    min: 5, max: 5 },
+  foedselsdag: { navn: "Fødselsdag",  min: 4, max: 5 },
+  skole:       { navn: "Skole",       min: 1, max: 4 },
+  oellgaard:   { navn: "ØLLGAARD",    min: 3, max: 5 },
+  arbejde:     { navn: "Arbejde",     min: 1, max: 2 }
+};
+
+const OCCASION_KEY = "skabet-lejlighed";
+
+function loadOccasion(){
+  const gemt = localStorage.getItem(OCCASION_KEY);
+  return OCCASIONS[gemt] ? gemt : "alle";
+}
+
+let occasion = loadOccasion();
+
+/* Skaerer puljen ned til det der passer til lejligheden. Ligger intet inden
+   for intervallet, tages det der ligger TAETTEST paa i stedet for at aabne
+   helt op - fx findes der ingen troeje med paenhed 5, saa "Fint toej" faar
+   en 4'er og ikke en tilfaeldig hoodie. Puljen bliver derfor aldrig tom. */
+function filtrerPaaLejlighed(pool){
+  const omr = OCCASIONS[occasion];
+  if (!omr || !pool.length) return pool;
+  const afstand  = i => Math.max(omr.min - i.paenhed, i.paenhed - omr.max, 0);
+  const taettest = Math.min(...pool.map(afstand));
+  return pool.filter(i => afstand(i) === taettest);
+}
+
 const pick = (cat, avoidId) => {
   let pool = items.filter(i => i.category === cat);
   if (cat === "outerwear" && regnvejr && foersteSaet){
     const regnjakker = pool.filter(i => i.regn);
     if (regnjakker.length) pool = regnjakker;   // ingen taggede jakker = alt er stadig i spil
   }
+  pool = filtrerPaaLejlighed(pool);             // efter regn, saa man aldrig staar uden regnjakke
   if (avoidId != null && pool.length > 1){
     pool = pool.filter(i => i.id !== avoidId);   // undgaa gaarsdagens stykke naar der er et alternativ
   }
@@ -411,6 +453,14 @@ function shuffle(){
 }
 
 document.getElementById("shuffle").addEventListener("click", shuffle);
+
+/* Et nyt valg gemmes og giver et helt nyt saet med det samme - laaste kategorier
+   beholder dog deres stykke, praecis som ved et almindeligt tryk paa knappen. */
+occasionEl.addEventListener("change", () => {
+  occasion = occasionEl.value;
+  localStorage.setItem(OCCASION_KEY, occasion);
+  shuffle();
+});
 
 favoriteBtn.addEventListener("click", () => {
   const favorites = loadFavorites();
@@ -522,7 +572,11 @@ function bump(btn){
 function cycleSlot(slot){
   const cat = slot.dataset.cat;
   if (!current[cat] || lockedCats.has(cat)) return;   // intet toej, eller laast
-  const pool = items.filter(i => i.category === cat && i.id !== current[cat].id);
+  // Puljen tages fra det viste stykkes egen kategori, ikke slottets navn -
+  // ellers ville bukse-slottet skifte fra shorts til lange bukser paa en varm dag.
+  const kat  = current[cat].category;
+  const pool = filtrerPaaLejlighed(items.filter(i => i.category === kat))
+                 .filter(i => i.id !== current[cat].id);
   if (!pool.length) return;
   current[cat] = pool[Math.floor(Math.random() * pool.length)];
   renderSlot(slot, current[cat]);
@@ -532,6 +586,7 @@ function cycleSlot(slot){
 }
 
 async function init(){
+  occasionEl.value = occasion;      // menuen viser det valg der blev gemt sidst
   const w = await fetchWeather();
   if (w){
     temp = w.max;                // hoejeste forventede temperatur i dag

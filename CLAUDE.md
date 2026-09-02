@@ -50,12 +50,17 @@ opstart (`rebuildItems()`):
 1. **Hardcodet** i objektet `files` øverst i `script.js`:
    ```js
    const files = {
-     "top-1.png": "Sort t-shirt",
+     "top-7.png":       { navn: "Sort t-shirt", paenhed: 4 },
+     "outerwear-14.png":{ navn: "Sort lang frakke", regn: true, paenhed: 5 },
      ...
    };
    ```
-   Filnavnet før første bindestreg er kategorien. Værdien er navnet der
-   vises i favorit- og meta-chips.
+   Filnavnet før første bindestreg er kategorien. Værdien må være enten ren
+   tekst (kun navnet) eller et objekt med flere oplysninger:
+   - `navn` — vises i favorit- og meta-chips.
+   - `paenhed` — 1 (mest afslappet) til 5 (pusset op). Bruges af
+     lejlighedsmenuen. Mangler den, bruges `STANDARD_PAENHED` (3).
+   - `regn` — `true` markerer en regnjakke, se "Sådan virker logikken".
 2. **Tilføjet fra formularen** ("+"-knappen i footeren). Gemmes i
    `localStorage` under nøglen `skabet-extra-items` — findes derfor kun
    på den enhed/browser det er tilføjet fra. Billedet skaleres til maks
@@ -86,6 +91,19 @@ ikke længere nogen temperatur-afhængig fravalg af `mid`/`outerwear` (det
 var oprindeligt sådan, men blev bevidst fjernet). Vejret bruges kun til
 visning i headeren, ikke til at styre valget af tøj.
 
+**Lejlighed:** menuen over flat-layet vælger hvor pænt tøjet skal være.
+Hver lejlighed er et interval på `paenhed` (`OCCASIONS` i `script.js`):
+Alt 1-5, Fint tøj 5, Fødselsdag 4-5, Skole 1-4, ØLLGAARD 3-5, Arbejde 1-2.
+Valget gemmes i `localStorage` (`skabet-lejlighed`) og påvirker både
+"Giv mig et sæt" og pilene.
+
+`filtrerPaaLejlighed()` er bevidst et blødt filter: har en kategori intet
+inden for intervallet, vælges det der ligger **tættest på** i stedet for at
+åbne helt op. Det er nødvendigt, fordi der fx ikke findes nogen `mid` med
+`paenhed` 5 — "Fint tøj" giver derfor en 4'er, ikke en tilfældig hoodie, og
+et slot kan aldrig ende tomt. Tilføjer du tøj i den høje ende, retter det
+sig selv.
+
 **Undgå gentagelser:** `buildOutfit()` sammenligner med gårsdagens sæt
 (gemt i `localStorage` under `skabet-history`) og undgår at vælge samme
 stykke to dage i træk, hvis kategorien har et alternativ.
@@ -95,11 +113,13 @@ kategorien i `lockedCats` (et `Set` i JS) — låste kategorier beholder
 deres nuværende stykke ved næste shuffle, og pilene (se nedenfor) gør
 ingenting på en låst kategori.
 
-**Skift enkeltvis:** hvert slot har to pil-knapper (`pil.jpg`, spejlvendt
-for venstre) der trækker et tilfældigt andet stykke i kategorien
-(`cycleSlot()`). Det nuværende stykke filtreres fra puljen, så et tryk
-altid giver et synligt skift. Begge pile gør det samme — retningen har
-kun betydning for animationen. Et lille "nik" i pilens retning
+**Skift enkeltvis:** hvert slot har én pil-knap (`pil.jpg`) i ikon-zonen
+til højre, der trækker et tilfældigt andet stykke i kategorien
+(`cycleSlot()`), inden for den valgte lejlighed. Det nuværende stykke
+filtreres fra puljen, så et tryk altid giver et synligt skift. Puljen
+tages fra det viste stykkes egen kategori, ikke slottets navn — ellers
+ville bukse-slottet skifte fra shorts til lange bukser på en varm dag.
+Et lille "nik" i pilens retning
 (`@keyframes bump-left/bump-right`, trigget fra JS) giver visuel feedback
 ved klik — `:active` i CSS er ikke pålideligt nok på iOS Safari uden en
 touch-lytter et sted på siden.
