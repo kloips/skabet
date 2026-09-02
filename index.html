@@ -16,7 +16,7 @@
 <!-- ?v= tvinger Safari til at hente filen paa ny. Bump datoen naar du aendrer
      style.css eller script.js - ellers kan telefonen sidde fast paa en gammel
      udgave, selvom den nye er pushet. -->
-<link rel="stylesheet" href="style.css?v=20260902n">
+<link rel="stylesheet" href="style.css?v=20260902o">
 </head>
 <body>
 
@@ -50,6 +50,11 @@
 
 <!-- Vaelg Outfit: selve flat-layet, det man lander paa om morgenen. -->
 <section class="view" id="view-outfit">
+  <!-- Egen linje OVER raekken, ikke inde i en af de to kolonner: de er sat op
+       til at flugte linje for linje, og en ekstra linje i den ene side ville
+       skubbe bundene ud af flugt. -->
+  <p class="dagsdato" id="dagsdato"></p>
+
   <!-- Vejret staar her og ikke i headeren, saa det flugter med "Lejlighed". -->
   <div class="occasion-raekke">
     <!-- Egen menu i stedet for en <select>: browserens indbyggede dropdown
@@ -157,6 +162,6 @@
   </form>
 </dialog>
 
-<script src="script.js?v=20260902n" defer></script>
+<script src="script.js?v=20260902o" defer></script>
 </body>
 </html>
