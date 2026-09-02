@@ -69,16 +69,6 @@ header{
   gap:12px;
 }
 
-/* Ugedag og dato paa sin egen linje over raekken. Samme vaegt og farve som
-   "Lejlighed"-labelen, saa den ikke konkurrerer med den. */
-.dagsdato{
-  font-family:var(--font-label);
-  font-size:13px;
-  line-height:1.25;
-  color:var(--ink-soft);
-  margin:0 2px 6px;
-}
-
 /* Vejret og lejlighedsvalget staar side om side, med vejret i hoejde
    med "Lejlighed"-labelen. */
 .occasion-raekke{

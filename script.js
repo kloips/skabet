@@ -194,7 +194,6 @@ const favoriteBtn   = document.getElementById("favorite");
 const addItemBtn    = document.getElementById("addItemBtn");
 const woreBtn       = document.getElementById("woreBtn");
 const undoBtn       = document.getElementById("undoBtn");
-const dagsdatoEl    = document.getElementById("dagsdato");
 const occasionBtn    = document.getElementById("occasionBtn");
 const occasionListe  = document.getElementById("occasionListe");
 const occasionVaerdi = document.getElementById("occasionVaerdi");
@@ -1042,11 +1041,6 @@ function retEfterVejr(){
 }
 
 async function init(){
-  // Ugedag og dato, fx "onsdag 2. september". Saettes en gang og opdateres
-  // ikke undervejs - appen er aaben i minutter om morgenen, ikke over midnat.
-  dagsdatoEl.textContent = new Date().toLocaleDateString("da-DK", {
-    weekday: "long", day: "numeric", month: "long"
-  });
   byggVaelger();
   visValgtLejlighed();              // vaelgeren viser det valg der blev gemt sidst
   renderFavorites();
