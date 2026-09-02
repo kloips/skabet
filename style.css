@@ -94,26 +94,25 @@ h1{
   display:flex;
   flex-direction:column;
   align-items:flex-end;
-  gap:7px;                  /* samme mellemrum som i .occasion */
+  gap:2px;                  /* de to linjer hoerer sammen og staar taet */
   text-align:right;
   white-space:nowrap;
   font-family:var(--font-label);
 }
 
 .weather-temp{
-  font-size:20px;
+  font-size:18px;
   line-height:1.25;
   color:var(--ink-soft);
 }
 
-/* Samme skriftstoerrelse og lodrette maal som selecten (padding + dens 1px kant),
-   saa "Regn" staar praecis i hoejde med det valgte punkt og de to kolonner
-   bliver lige hoeje. */
+/* Ingen padding her: de to vejrlinjer skal staa taet sammen som en enhed.
+   Til gengaeld flugter "Regn" ikke laengere med det valgte punkt i selecten
+   til venstre - det er et bevidst valg, ikke en fejl. */
 .weather-navn{
-  font-size:20px;
+  font-size:18px;
   line-height:1.25;
   color:var(--ink);
-  padding:10px 0;
 }
 
 main{flex:1;padding:0 20px 20px}
