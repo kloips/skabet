@@ -253,6 +253,12 @@ let foersteSaet = true;   // regnjakke tvinges kun igennem paa dagens foerste sa
 const VEJR_FRA = 10;   // fra kl. 10
 const VEJR_TIL = 20;   // til og med kl. 20
 
+/* Samlet nedboer i vinduet foer regnjakken tvinges frem. Et regnsymbol alene
+   er ikke nok - yr.no saetter ogsaa "lightrain" paa en time med 0,1 mm, som
+   man daarligt maerker. 0,5 mm over hele dagen er den nedre ende af det man
+   faktisk bliver vaad af. Skru op hvis regnjakken kommer for tit. */
+const REGN_MM = 0.5;
+
 async function fetchWeather(){
   try {
     const res  = await fetch("https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=55.68&lon=12.57");
@@ -288,6 +294,15 @@ async function fetchWeather(){
 
     if (!timer.length || !temps.length) return null;
 
+    /* Nedboer taelles KUN fra next_1_hours, som daekker praecis en time inde i
+       vinduet. next_6_hours ville traekke nedboer uden for vinduet med. Feltet
+       mangler paa den sidste raekke i timeserien og kan mangle sporadisk -
+       de raekker springes bare over. */
+    const nedboer = valgte.reduce((sum, r) => {
+      const mm = r.data.next_1_hours?.details?.precipitation_amount;
+      return typeof mm === "number" ? sum + mm : sum;
+    }, 0);
+
     // Beskrivelsen bygger paa det vejr der fylder FLEST timer - ikke det
     // kraftigste. Ellers kom to timers torden til at doebe hele dagen.
     // Ved lige mange timer vinder det kraftigste (laveste rang).
@@ -300,9 +315,10 @@ async function fetchWeather(){
       min: Math.min(...temps),
       max: Math.max(...temps),
       navn: VEJR_TYPER[dominerende].navn,
-      // Regnjakken skal frem hvis bare en del af tidsrummet er vaadt - ogsaa
-      // naar beskrivelsen siger noget andet, fordi den kun naevner det der fylder mest.
-      regn: timer.some(t => VEJR_TYPER[t.rang].regn)
+      // Regnjakken kraever BEGGE dele: et regnsymbol et sted i vinduet, OG at
+      // der samlet falder nok til at man bliver vaad. Uafhaengigt af navnet
+      // herover, som kun beskriver det vejr der fylder flest timer.
+      regn: timer.some(t => VEJR_TYPER[t.rang].regn) && nedboer >= REGN_MM
     };
   } catch {
     return null;                  // ingen forbindelse, brug fallback-temperaturen
@@ -508,17 +524,21 @@ const pick = (cat, avoidId) => {
   return pool[Math.floor(Math.random() * pool.length)];
 };
 
+/* Over 22 grader traekkes shorts i stedet for lange bukser. Slottet hedder
+   stadig "bottom" - det er kun puljen der skifter. Ligger som funktion fordi
+   retEfterVejr() skal stille samme spoergsmaal igen naar vejret er landet. */
+function benKategori(){
+  return (typeof temp === "number" && temp >= 22
+          && items.some(i => i.category === "shorts"))
+         ? "shorts"
+         : "bottom";
+}
+
 function buildOutfit(){
   const history  = loadHistory();
   const today    = new Date().toISOString().slice(0, 10);
   const isNewDay = history.date && history.date !== today;
-
-  // Over 22 grader traekkes shorts i stedet for lange bukser.
-  // Slottet hedder stadig "bottom" - det er kun puljen der skifter.
-  const benKat = (typeof temp === "number" && temp >= 22
-                  && items.some(i => i.category === "shorts"))
-                 ? "shorts"
-                 : "bottom";
+  const benKat   = benKategori();
 
   const wanted = {
     top:       "top",
@@ -980,20 +1000,62 @@ function cycleSlot(slot){
   updateWoreButton();
 }
 
+/* Saettet bygges paa fallback-vejret, saa det kan vises med det samme. Naar
+   det rigtige vejr lander bagefter, rettes KUN de slots der beviseligt blev
+   valgt paa et forkert grundlag - resten af skaermen skal staa helt stille.
+   Der bruges renderSlot() paa de enkelte slots, ikke render() paa hele
+   saettet, saa billedet krydsblender i stedet for at layoutet hopper. */
+function retEfterVejr(){
+  const rettede = [];
+
+  // 1. Regn. Jakken blev valgt uden at vide at det bliver vaadt.
+  if (regnvejr && current.outerwear && !current.outerwear.regn){
+    foersteSaet = true;               // rettelsen her ER dagens foerste saet
+    const jakke = pick("outerwear");
+    foersteSaet = false;              // naeste tryk paa knappen har alle jakker i spil igen
+    // Byttes kun hvis der faktisk kom en regnjakke ud af det. Er ingen jakker
+    // tagget, staar den valgte jakke - praecis som pick() selv goer.
+    if (jakke && jakke.regn){
+      current.outerwear = jakke;
+      rettede.push("outerwear");
+    }
+  }
+
+  // 2. Shorts. Temperaturen kan have krydset 22-graders-graensen.
+  const oensket = benKategori();
+  if (current.bottom && current.bottom.category !== oensket){
+    const ben = pick(oensket);
+    if (ben){
+      current.bottom = ben;
+      rettede.push("bottom");
+    }
+  }
+
+  if (!rettede.length) return;        // intet at rette - skaermen roeres ikke
+
+  rettede.forEach(cat => renderSlot(lay.querySelector(`.slot[data-cat="${cat}"]`), current[cat]));
+  renderMeta(current);
+  saveHistory(current);
+  updateFavoriteButton();
+  updateWoreButton();
+}
+
 async function init(){
   byggVaelger();
   visValgtLejlighed();              // vaelgeren viser det valg der blev gemt sidst
-  const w = await fetchWeather();
-  if (w){
-    temp = w.max;                // hoejeste forventede temperatur i tidsrummet VEJR_FRA-VEJR_TIL
-    regnvejr = w.regn;
-    // Temperaturen oeverst, vejrtypen under - navnene staar med lille begyndelsesbogstav.
-    weatherTemp.textContent = `${Math.round(w.min)}–${Math.round(w.max)}°`;
-    weatherNavn.textContent = w.navn.charAt(0).toUpperCase() + w.navn.slice(1);
-  }
   renderFavorites();
-  shuffle();
+  shuffle();                        // vises straks - vejret hentes bagefter
   visView("outfit");
+
+  const w = await fetchWeather();
+  if (!w) return;                   // ingen forbindelse: saettet staar som det blev bygget
+
+  temp = w.max;                // hoejeste forventede temperatur i tidsrummet VEJR_FRA-VEJR_TIL
+  regnvejr = w.regn;
+  // Temperaturen oeverst, vejrtypen under - navnene staar med lille begyndelsesbogstav.
+  weatherTemp.textContent = `${Math.round(w.min)}–${Math.round(w.max)}°`;
+  weatherNavn.textContent = w.navn.charAt(0).toUpperCase() + w.navn.slice(1);
+  retEfterVejr();
 }
 
 init();
