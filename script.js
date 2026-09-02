@@ -488,16 +488,41 @@ function visView(navn){
   window.scrollTo(0, 0);
 }
 
+/* Menuen folder sig ud fra ikonet. Selve bevaegelsen ligger i CSS
+   (@keyframes menu-fold-ud/-ind) - her styres kun hvornaar klasserne
+   saettes, og hvornaar elementet maa forsvinde helt.
+   Der bruges en timer og ikke "animationend", fordi den sidste aldrig
+   udloeses hvis brugeren har slaaet animationer fra i systemet. */
+const MENU_LUK_MS = 190;   /* skal matche varigheden paa menu-fold-ind */
+let menuAaben = false;
+let menuTimer = null;
+
+function aabnMenu(){
+  clearTimeout(menuTimer);
+  menuAaben = true;
+  menuEl.classList.remove("lukker");
+  menuEl.hidden = false;
+  void menuEl.offsetWidth;          // tving reflow, saa animationen starter forfra
+  menuEl.classList.add("aaben");
+  menuBtn.setAttribute("aria-expanded", "true");
+}
+
 function lukMenu(){
-  menuEl.hidden = true;
+  if (!menuAaben) return;
+  clearTimeout(menuTimer);
+  menuAaben = false;
+  menuEl.classList.remove("aaben");
+  menuEl.classList.add("lukker");
   menuBtn.setAttribute("aria-expanded", "false");
+  menuTimer = setTimeout(() => {
+    menuEl.hidden = true;
+    menuEl.classList.remove("lukker");
+  }, MENU_LUK_MS);
 }
 
 menuBtn.addEventListener("click", e => {
   e.stopPropagation();
-  const aaben = menuEl.hidden;
-  menuEl.hidden = !aaben;
-  menuBtn.setAttribute("aria-expanded", String(aaben));
+  menuAaben ? lukMenu() : aabnMenu();
 });
 
 menuEl.addEventListener("click", e => {
@@ -507,10 +532,10 @@ menuEl.addEventListener("click", e => {
 
 // Tryk udenfor eller Escape lukker menuen igen.
 document.addEventListener("click", e => {
-  if (!menuEl.hidden && !menuEl.contains(e.target)) lukMenu();
+  if (menuAaben && !menuEl.contains(e.target)) lukMenu();
 });
 document.addEventListener("keydown", e => {
-  if (e.key === "Escape" && !menuEl.hidden) lukMenu();
+  if (e.key === "Escape") lukMenu();
 });
 
 /*---------------------------------------------------------------

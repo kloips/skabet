@@ -101,7 +101,11 @@ main{flex:1;padding:0 20px 20px}
   background:var(--card);
   border:1px solid var(--line);
   color:var(--ink);
+  transition:transform .25s cubic-bezier(.22,.61,.36,1);
 }
+
+/* Ikonet drejer med, saa knappen selv viser at menuen er foldet ud. */
+.menu-btn[aria-expanded="true"]{transform:rotate(90deg)}
 
 .menu{
   position:sticky;
@@ -111,7 +115,34 @@ main{flex:1;padding:0 20px 20px}
   border-block:1px solid var(--line);
   display:flex;
   flex-direction:column;
+  /* Hængslet sidder oppe ved menu-ikonet, saa panelet vipper ned derfra. */
+  transform-origin:40px top;
 }
+
+/* Panelet vipper ned om sit oeverste hjoerne som et stykke papir der foldes ud. */
+@keyframes menu-fold-ud{
+  0%   {opacity:0; transform:perspective(900px) rotateX(-85deg) scale(.97)}
+  100% {opacity:1; transform:perspective(900px) rotateX(0deg)   scale(1)}
+}
+
+@keyframes menu-fold-ind{
+  0%   {opacity:1; transform:perspective(900px) rotateX(0deg)   scale(1)}
+  100% {opacity:0; transform:perspective(900px) rotateX(-70deg) scale(.98)}
+}
+
+/* Punkterne daler ind bagefter, forskudt, saa udfoldningen faar dybde. */
+@keyframes menu-punkt-ind{
+  0%   {opacity:0; transform:translateY(-8px)}
+  100% {opacity:1; transform:translateY(0)}
+}
+
+.menu.aaben{animation:menu-fold-ud .3s cubic-bezier(.22,.61,.36,1) both}
+.menu.lukker{animation:menu-fold-ind .19s ease-in both}   /* varigheden matcher MENU_LUK_MS i script.js */
+
+.menu.aaben .menu-item{animation:menu-punkt-ind .26s ease both}
+.menu.aaben .menu-item:nth-child(1){animation-delay:.08s}
+.menu.aaben .menu-item:nth-child(2){animation-delay:.13s}
+.menu.aaben .menu-item:nth-child(3){animation-delay:.18s}
 
 .menu-item{
   border:none;
@@ -463,6 +494,10 @@ dialog h2{
 
 @media (prefers-reduced-motion:reduce){
   .slot img,button{transition:none}
+  /* Menuen skal stadig kunne aabne og lukke - den gaar bare direkte til maalet.
+     Lukningen styres af en timer i JS, saa den virker ogsaa uden animation. */
+  .menu.aaben,.menu.lukker,.menu.aaben .menu-item{animation:none}
+  .menu.lukker{opacity:0}
 }
 
 @media (min-width:520px){

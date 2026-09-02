@@ -138,6 +138,13 @@ visninger (`visView()` i `script.js`):
 | Vælg Outfit | `#view-outfit` | flat-layet, lejlighedsmenuen og meta-chips |
 | Favorit Outfits | `#view-favoritter` | gemte sæt |
 
+Menuen folder sig ud fra ikonet (`@keyframes menu-fold-ud`/`-ind` i
+`style.css`), og punkterne daler forskudt ind bagefter. ☰-knappen drejer
+90° via `[aria-expanded="true"]`. Selve lukningen styres af en **timer**
+(`MENU_LUK_MS`), ikke af `animationend` — sidstnævnte udløses aldrig hvis
+brugeren har slået animationer fra i systemet, og menuen ville så aldrig
+blive skjult. Ændrer du varigheden i CSS, skal `MENU_LUK_MS` følge med.
+
 Det er ikke en router — alle tre sektioner ligger i `index.html`, og der
 skiftes ved at sætte `hidden` på de øvrige. Der er ingen URL pr. visning,
 og valget huskes ikke: appen starter altid på "Vælg Outfit", fordi det er
