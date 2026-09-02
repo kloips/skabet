@@ -101,7 +101,7 @@ h1{
 }
 
 .weather-temp{
-  font-size:13px;
+  font-size:20px;
   line-height:1.25;
   color:var(--ink-soft);
 }
@@ -110,7 +110,7 @@ h1{
    saa "Regn" staar praecis i hoejde med det valgte punkt og de to kolonner
    bliver lige hoeje. */
 .weather-navn{
-  font-size:15px;
+  font-size:20px;
   line-height:1.25;
   color:var(--ink);
   padding:10px 0;
@@ -323,7 +323,7 @@ main{flex:1;padding:0 20px 20px}
 
 .occasion label{
   font-family:var(--font-label);
-  font-size:13px;
+  font-size:15px;
   line-height:1.25;
   color:var(--ink-soft);
 }
