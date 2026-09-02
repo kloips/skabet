@@ -811,8 +811,9 @@ async function init(){
     // Temperaturen oeverst, vejrtypen under - navnene staar med lille begyndelsesbogstav.
     weatherTemp.textContent = `${Math.round(w.min)}–${Math.round(w.max)}°`;
     weatherNavn.textContent = w.navn.charAt(0).toUpperCase() + w.navn.slice(1);
+    // Linjen kan vaere tom, men dens plads bliver staaende - ellers skifter
+    // hoejre kolonne hoejde, og bunden flugter ikke med lejlighedsboksen.
     weatherDetalje.textContent = w.detalje;
-    weatherDetalje.hidden = !w.detalje;   // ingen linje naar vejret er ens hele tidsrummet
   }
   renderFavorites();
   shuffle();
