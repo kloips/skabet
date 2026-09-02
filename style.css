@@ -601,6 +601,41 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ghost:disabled{opacity:.35;cursor:default}
 .ghost[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
 
+/* Forstoerret toejbillede. Ligger over alt andet - footeren er 10, menuen 20. */
+.zoom{
+  position:fixed;
+  inset:0;
+  z-index:30;
+  background:var(--paper);
+  cursor:pointer;
+}
+
+/* Billedet er fotograferet paa siden og roteres 90 grader ligesom i slottet.
+   Derfor er maalene byttet om: elementets width bliver den VISUELLE hoejde,
+   og height bliver den visuelle bredde. De 120px holder plads til navnet
+   nedenunder, de 48px er luft i siderne. Absolut placering, fordi et roteret
+   element ellers fylder sin ikke-roterede kasse i layoutet. */
+.zoom-billede{
+  position:absolute;
+  top:50%;
+  left:50%;
+  width:calc(100svh - 120px);
+  height:calc(100vw - 48px);
+  object-fit:contain;          /* aldrig cover - toejet maa ikke beskaeres */
+  transform:translate(-50%,-50%) rotate(90deg);
+}
+
+.zoom-navn{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:28px;
+  text-align:center;
+  font-family:var(--font-label);
+  font-size:13px;
+  color:var(--ink-soft);
+}
+
 dialog{
   border:none;
   border-radius:var(--radius);

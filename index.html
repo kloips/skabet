@@ -16,7 +16,7 @@
 <!-- ?v= tvinger Safari til at hente filen paa ny. Bump datoen naar du aendrer
      style.css eller script.js - ellers kan telefonen sidde fast paa en gammel
      udgave, selvom den nye er pushet. -->
-<link rel="stylesheet" href="style.css?v=20260902p">
+<link rel="stylesheet" href="style.css?v=20260902q">
 </head>
 <body>
 
@@ -132,6 +132,14 @@
   </div>
 </footer>
 
+<!-- Forstoerret toejbillede. Bevidst IKKE en <dialog>: der er ingen felter at
+     udfylde, saa backdrop og fokusfaelde ville kun vaere noget at styre udenom.
+     Billedet har sin egen klasse, saa .slot img.garment ikke rammer det. -->
+<div class="zoom" id="zoom" hidden>
+  <img class="zoom-billede" id="zoomBillede" src="" alt="">
+  <p class="zoom-navn" id="zoomNavn"></p>
+</div>
+
 <dialog id="addDialog">
   <form id="addForm">
     <h2>Tilføj tøj</h2>
@@ -157,6 +165,6 @@
   </form>
 </dialog>
 
-<script src="script.js?v=20260902p" defer></script>
+<script src="script.js?v=20260902q" defer></script>
 </body>
 </html>

@@ -194,6 +194,9 @@ const favoriteBtn   = document.getElementById("favorite");
 const addItemBtn    = document.getElementById("addItemBtn");
 const woreBtn       = document.getElementById("woreBtn");
 const undoBtn       = document.getElementById("undoBtn");
+const zoomEl        = document.getElementById("zoom");
+const zoomBillede   = document.getElementById("zoomBillede");
+const zoomNavn      = document.getElementById("zoomNavn");
 const occasionBtn    = document.getElementById("occasionBtn");
 const occasionListe  = document.getElementById("occasionListe");
 const occasionVaerdi = document.getElementById("occasionVaerdi");
@@ -905,7 +908,13 @@ favoritesList.addEventListener("click", e => {
 
 lay.addEventListener("click", e => {
   const btn = e.target.closest(".icon-btn");
-  if (!btn) return;
+  if (!btn){
+    // Tryk paa selve toejbilledet forstoerrer det. Alt andet i en slot -
+    // tom plads, eller et slot uden toej - goer ingenting.
+    const billede = e.target.closest("img.garment");
+    if (billede) visStort(billede);
+    return;
+  }
   const slot = btn.closest(".slot");
   const cat  = slot.dataset.cat;
   if (!current[cat]) return;               // intet toej i slotten
@@ -918,6 +927,29 @@ lay.addEventListener("click", e => {
   }
 
   if (btn.dataset.action === "next"){ bump(btn); cycleSlot(slot); }
+});
+
+/*---------------------------------------------------------------
+   Forstoerret toejbillede. Kilde og navn tages fra det billede der
+   blev trykket paa, saa der ikke skal slaas op i items igen.
+----------------------------------------------------------------*/
+function visStort(billede){
+  zoomBillede.src = billede.src;
+  zoomBillede.alt = billede.alt;
+  zoomNavn.textContent = billede.alt;
+  zoomEl.hidden = false;
+}
+
+function lukStort(){
+  zoomEl.hidden = true;
+}
+
+zoomEl.addEventListener("click", lukStort);   // tryk hvor som helst paa laget
+
+/* Egen Escape-lytter. De to andre (menuen og vaelgeren) kalder funktioner der
+   selv springer fra naar de er lukkede, saa de tre paavirker ikke hinanden. */
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") lukStort();
 });
 
 /* Skalerer et billede ned via canvas, saa det fylder mindre i localStorage.
