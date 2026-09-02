@@ -91,14 +91,31 @@ ikke længere nogen temperatur-afhængig fravalg af `mid`/`outerwear` (det
 var oprindeligt sådan, men blev bevidst fjernet). Vejret bruges kun til
 visning i headeren, ikke til at styre valget af tøj.
 
-**Vejr:** hentes fra Open-Meteo som **timedata**, ikke døgnværdier, og
-begrænses til `VEJR_FRA`–`VEJR_TIL` (kl. 10-20) i `fetchWeather()`. Af de
-timer tages laveste og højeste temperatur samt den højeste vejrkode
-(WMO-skalaen er groft sagt sorteret efter kraftighed). Det var før baseret
-på hele døgnet, hvilket betød at en varm eftermiddag kunne give shorts til
-en kold morgen, og at regn kl. 23 kunne tvinge en regnjakke frem. Vil du
-ændre tidsrummet, er det de to konstanter der skal rettes — resten af
-logikken bruger bare `min`/`max`/`weathercode`.
+**Vejr:** hentes fra **yr.no** (MET Norway) på
+`api.met.no/weatherapi/locationforecast/2.0/compact`, ingen API-nøgle.
+Var før Open-Meteo. Der bruges **timedata**, begrænset til `VEJR_FRA`–
+`VEJR_TIL` (kl. 10-20) i `fetchWeather()`; af de timer tages laveste og
+højeste temperatur samt det kraftigste vejr. Vil du ændre tidsrummet, er
+det de to konstanter der skal rettes — resten af logikken bruger bare
+`min`/`max`/`navn`/`regn`.
+
+To ting der er værd at kende ved yr.no:
+
+- De leverer **kun fra nu og frem**. Åbner du appen kl. 7, fås hele
+  10-20; åbner du kl. 19, kun 19-20. Er der ingen timer tilbage i dag,
+  bruges morgendagens vindue i stedet for at vise ingenting.
+- Deres vilkår kræver en `User-Agent` der identificerer appen, men den
+  header kan en browser ikke sætte (spærret af Fetch-standarden). Vi er
+  derfor teknisk set ikke helt på linje med vilkårene. De har selv slået
+  CORS til, så browserklienter er forventede, men de kan lukke for det.
+  Sker det, er Open-Meteo den oplagte reserve.
+
+Vejret beskrives med tekst-koder (`"cloudy"`, `"lightrainshowers_day"`,
+`"rainandthunder"`), ikke tal som Open-Meteos WMO-koder. `VEJR_TYPER` i
+`script.js` oversætter dem til dansk og markerer hvilke der tæller som
+regn. **Listen er sorteret efter kraftighed, kraftigst øverst** — den
+rækkefølge afgør både navnet og hvilken time der bestemmer dagens vejr,
+så flyt ikke rundt på den uden at tænke over begge dele.
 
 **Lejlighed:** menuen over flat-layet vælger hvor pænt tøjet skal være.
 Hver lejlighed er et interval på `paenhed` (`OCCASIONS` i `script.js`):
@@ -274,7 +291,8 @@ andre.
 
 Rækkefølgen er bevidst. Tag ét trin ad gangen, og spørg før du springer frem.
 
-1. ✅ Rigtigt vejr. Open-Meteo, ingen API-nøgle. København er 55.68, 12.57.
+1. ✅ Rigtigt vejr. yr.no (MET Norway), ingen API-nøgle. Startede på
+   Open-Meteo. København er 55.68, 12.57.
 2. ✅ Undgå gentagelser. Historik gemmes i `localStorage`, samme stykke
    undgås dagen efter det er brugt.
 3. ✅ Gem favoritsæt, så et godt sæt kan hentes frem igen.

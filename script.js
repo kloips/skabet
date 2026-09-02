@@ -212,18 +212,29 @@ let current = {};
 let temp = 14;                  // fallback hvis vejret ikke kan hentes
 
 /* Koebenhavn, ingen API-noegle noedvendig. */
-const weatherCodes = {
-  0:"klart vejr", 1:"let skyet", 2:"delvist skyet", 3:"overskyet",
-  45:"taage", 48:"rimtaage",
-  51:"let styrtregn", 53:"styrtregn", 55:"kraftig styrtregn",
-  61:"let regn", 63:"regn", 65:"kraftig regn",
-  71:"let sne", 73:"sne", 75:"kraftig sne",
-  80:"byger", 81:"kraftige byger", 82:"voldsomme byger",
-  95:"torden"
-};
+/* yr.no beskriver vejret med tekst-koder som "cloudy", "lightrainshowers_day"
+   eller "rainandthunder" - ikke tal. Listen her er sorteret efter hvor kraftigt
+   vejret er, kraftigst oeverst: den foerste regel der passer, vinder. Det er
+   ogsaa den raekkefoelge der afgoer hvilken time der bestemmer dagens vejr. */
+const VEJR_TYPER = [
+  { test: k => k.includes("thunder"),         navn: "torden",        regn: true  },
+  { test: k => k.includes("sleet"),           navn: "slud",          regn: true  },
+  { test: k => k.includes("snow"),            navn: "sne",           regn: false },
+  { test: k => k.includes("rain"),            navn: "regn",          regn: true  },
+  { test: k => k.includes("fog"),             navn: "tåge",          regn: false },
+  { test: k => k === "cloudy",                navn: "overskyet",     regn: false },
+  { test: k => k.startsWith("partlycloudy"),  navn: "delvist skyet", regn: false },
+  { test: k => k.startsWith("fair"),          navn: "let skyet",     regn: false },
+  { test: k => k.startsWith("clearsky"),      navn: "klart",         regn: false }
+];
 
-/* Vejrkoder der taeller som regn (inkl. slud, byger og torden). */
-const REGN_KODER = new Set([51,53,55,56,57,61,63,65,66,67,80,81,82,95,96,99]);
+/* Giver pladsen i listen herover. Ukendt kode lander nederst, saa den aldrig
+   kommer til at bestemme dagens vejr. */
+function vejrRang(kode){
+  const i = VEJR_TYPER.findIndex(t => t.test(kode));
+  return i === -1 ? VEJR_TYPER.length : i;
+}
+
 let regnvejr = false;
 let foersteSaet = true;   // regnjakke tvinges kun igennem paa dagens foerste saet
 
@@ -235,27 +246,39 @@ const VEJR_TIL = 20;   // til og med kl. 20
 
 async function fetchWeather(){
   try {
-    const res  = await fetch("https://api.open-meteo.com/v1/forecast?latitude=55.68&longitude=12.57&hourly=temperature_2m,weathercode&timezone=Europe%2FCopenhagen&forecast_days=1");
+    const res  = await fetch("https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=55.68&lon=12.57");
     const data = await res.json();
-    if (!data.hourly || !data.hourly.time) return null;
+    const raekker = data?.properties?.timeseries;
+    if (!raekker || !raekker.length) return null;
 
-    // Tidsstemplerne er lokale og ser saadan ud: "2026-09-02T14:00".
-    const idx = data.hourly.time
-      .map((t, i) => [Number(t.slice(11, 13)), i])
-      .filter(([time]) => time >= VEJR_FRA && time <= VEJR_TIL)
-      .map(([, i]) => i);
+    // yr.no leverer kun fra nu og frem. Vi tager timerne i vinduet paa den
+    // foerste dag hvor der overhovedet er nogen - saa aabner man appen sent
+    // om aftenen, faar man morgendagens vejr i stedet for ingenting.
+    const iVindue = raekker.filter(r => {
+      const t = new Date(r.time).getHours();
+      return t >= VEJR_FRA && t <= VEJR_TIL;
+    });
+    if (!iVindue.length) return null;
 
-    if (!idx.length) return null;
+    const foersteDag = iVindue[0].time.slice(0, 10);
+    const valgte = iVindue.filter(r => r.time.slice(0, 10) === foersteDag);
 
-    const temps = idx.map(i => data.hourly.temperature_2m[i]);
-    const koder = idx.map(i => data.hourly.weathercode[i]);
+    const temps = valgte.map(r => r.data.instant.details.air_temperature);
+    // Symbolet ligger paa naeste time - er der ingen (sidste raekke), bruges seks-timers.
+    const koder = valgte
+      .map(r => r.data.next_1_hours?.summary?.symbol_code
+             || r.data.next_6_hours?.summary?.symbol_code)
+      .filter(Boolean)
+      .map(k => k.replace(/_(day|night|polartwilight)$/, ""));
+
+    const kraftigst = koder.sort((a, b) => vejrRang(a) - vejrRang(b))[0] || "";
+    const type = VEJR_TYPER.find(t => t.test(kraftigst));
 
     return {
       min: Math.min(...temps),
       max: Math.max(...temps),
-      // Hoejeste WMO-kode = groft sagt det kraftigste vejr i vinduet
-      // (skyer < taage < stoevregn < regn < sne < byger < torden).
-      weathercode: Math.max(...koder)
+      navn: type ? type.navn : "ukendt vejr",
+      regn: type ? type.regn : false
     };
   } catch {
     return null;                  // ingen forbindelse, brug fallback-temperaturen
@@ -759,11 +782,10 @@ async function init(){
   const w = await fetchWeather();
   if (w){
     temp = w.max;                // hoejeste forventede temperatur i tidsrummet VEJR_FRA-VEJR_TIL
-    regnvejr = REGN_KODER.has(w.weathercode);
-    // Temperaturen oeverst, vejrtypen under - vejrkoderne staar med lille begyndelsesbogstav.
-    const vejrnavn = weatherCodes[w.weathercode] || "ukendt vejr";
+    regnvejr = w.regn;
+    // Temperaturen oeverst, vejrtypen under - navnene staar med lille begyndelsesbogstav.
     weatherTemp.textContent = `${Math.round(w.min)}–${Math.round(w.max)}°`;
-    weatherNavn.textContent = vejrnavn.charAt(0).toUpperCase() + vejrnavn.slice(1);
+    weatherNavn.textContent = w.navn.charAt(0).toUpperCase() + w.navn.slice(1);
   }
   renderFavorites();
   shuffle();
