@@ -192,6 +192,7 @@ const favoritesList = document.getElementById("favoritesList");
 const favoritesEmpty= document.getElementById("favoritesEmpty");
 const favoriteBtn   = document.getElementById("favorite");
 const addItemBtn    = document.getElementById("addItemBtn");
+const woreBtn       = document.getElementById("woreBtn");
 const occasionBtn    = document.getElementById("occasionBtn");
 const occasionListe  = document.getElementById("occasionListe");
 const occasionVaerdi = document.getElementById("occasionVaerdi");
@@ -337,6 +338,45 @@ function saveFavorites(favorites){
 const outfitKey = outfit => CATS.map(cat => outfit[cat]?.id ?? "").join(",");
 const recordKey = record => CATS.map(cat => record[cat] ?? "").join(",");
 
+/* Log over de saet jeg FAKTISK gik i. Bevidst adskilt fra skabet-history,
+   der gemmer det appen foreslog og kun husker en enkelt dag. Loggen fyldes
+   udelukkende af "det tog jeg paa"-knappen - trykker man aldrig, er den tom,
+   og karantaenen herunder faar ingen virkning. */
+const LOG_KEY  = "skabet-log";
+const LOG_DAGE = 90;            // aeldre poster kastes vaek naar der skrives
+
+/* Dato N dage tilbage som "YYYY-MM-DD". Bruger samme UTC-baserede dato som
+   resten af appen (saveHistory, buildOutfit), saa dagene passer sammen. */
+function datoMinus(dage){
+  const d = new Date();
+  d.setDate(d.getDate() - dage);
+  return d.toISOString().slice(0, 10);
+}
+
+const idag = () => datoMinus(0);
+
+/* Ids i CATS-raekkefoelge, saa to saet kan sammenlignes som streng. */
+const outfitIds = outfit => CATS.map(cat => outfit[cat]?.id ?? "");
+
+function loadLog(){
+  try {
+    return JSON.parse(localStorage.getItem(LOG_KEY)) || [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLog(log){
+  const fra = datoMinus(LOG_DAGE);
+  localStorage.setItem(LOG_KEY, JSON.stringify(log.filter(p => p.date >= fra)));
+}
+
+/* Er det viste saet allerede registreret som baaret i dag? */
+function erBaaretIDag(){
+  const post = loadLog().find(p => p.date === idag());
+  return !!post && post.ids.join(",") === outfitKey(current);
+}
+
 function renderFavorites(){
   const favorites = loadFavorites();
   favoritesEmpty.hidden = favorites.length > 0;
@@ -362,6 +402,7 @@ function loadFavorite(record){
   render(current);
   saveHistory(current);
   updateFavoriteButton();
+  updateWoreButton();
 }
 
 function removeFavorite(id){
@@ -374,6 +415,10 @@ function updateFavoriteButton(){
   const isFav = loadFavorites().some(f => recordKey(f) === outfitKey(current));
   favoriteBtn.setAttribute("aria-pressed", String(isFav));
   favoriteBtn.textContent = isFav ? "★" : "☆";
+}
+
+function updateWoreButton(){
+  woreBtn.setAttribute("aria-pressed", String(erBaaretIDag()));
 }
 
 /* Lejligheder. Hver enkelt er et interval paa paenhed - se filtrerPaaLejlighed()
@@ -408,6 +453,36 @@ function filtrerPaaLejlighed(pool){
   return pool.filter(i => afstand(i) === taettest);
 }
 
+/* Dage et stykke holdes ude af puljen efter det er baaret. 0 = ingen pause. */
+const KARANTAENE = {
+  top:       7,
+  mid:       4,
+  bottom:    3,
+  shorts:    3,
+  shoes:     2,
+  outerwear: 0
+};
+
+/* Fjerner stykker der staar i loggen inden for kategoriens karantaeneperiode.
+   Vinduet er de seneste KARANTAENE[cat] dage inklusive i dag, saa "shoes: 2"
+   holder dagens sko ude i dag og i morgen.
+   Filtret er BLOEDT paa samme maade som filtrerPaaLejlighed(): tommer det
+   puljen, springes karantaenen over, saa et slot aldrig ender tomt. */
+function filtrerPaaKarantaene(pool, cat){
+  const dage = KARANTAENE[cat];
+  if (!dage || !pool.length) return pool;
+
+  const fra = datoMinus(dage - 1);
+  const nyligt = new Set();
+  loadLog().forEach(post => {
+    if (post.date >= fra) post.ids.forEach(id => nyligt.add(id));
+  });
+  if (!nyligt.size) return pool;
+
+  const tilbage = pool.filter(i => !nyligt.has(i.id));
+  return tilbage.length ? tilbage : pool;
+}
+
 const pick = (cat, avoidId) => {
   let pool = items.filter(i => i.category === cat);
   if (cat === "outerwear" && regnvejr && foersteSaet){
@@ -415,6 +490,7 @@ const pick = (cat, avoidId) => {
     if (regnjakker.length) pool = regnjakker;   // ingen taggede jakker = alt er stadig i spil
   }
   pool = filtrerPaaLejlighed(pool);             // efter regn, saa man aldrig staar uden regnjakke
+  pool = filtrerPaaKarantaene(pool, cat);       // til sidst: nyligt baaret toej holdes ude
   if (avoidId != null && pool.length > 1){
     pool = pool.filter(i => i.id !== avoidId);   // undgaa gaarsdagens stykke naar der er et alternativ
   }
@@ -516,6 +592,7 @@ function shuffle(){
   render(current);
   saveHistory(current);
   updateFavoriteButton();
+  updateWoreButton();
 }
 
 /*---------------------------------------------------------------
@@ -750,6 +827,18 @@ favoriteBtn.addEventListener("click", () => {
   updateFavoriteButton();
 });
 
+/* "Det tog jeg paa i dag". Der er kun plads til et saet pr. dag: er der
+   allerede logget et ANDET saet i dag, bliver det overskrevet. Trykker man
+   igen med det samme saet fremme, fortrydes registreringen. */
+woreBtn.addEventListener("click", () => {
+  const dag   = idag();
+  const samme = erBaaretIDag();
+  const log   = loadLog().filter(p => p.date !== dag);
+  if (!samme) log.push({ date: dag, ids: outfitIds(current) });
+  saveLog(log);
+  updateWoreButton();
+});
+
 favoritesList.addEventListener("click", e => {
   const btn = e.target.closest(".fav-chip");
   if (!btn) return;
@@ -859,6 +948,7 @@ function cycleSlot(slot){
   renderMeta(current);
   saveHistory(current);
   updateFavoriteButton();
+  updateWoreButton();
 }
 
 async function init(){
