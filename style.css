@@ -38,6 +38,8 @@
   --arrow-bottom:36px;  --arrow-y-bottom:0px;
   --arrow-shoes:36px;   --arrow-y-shoes:0px;
   --radius:14px;
+  /* Skrifttype til lejlighed og vejr - den bloede slab-serif. */
+  --font-label:"Bitter",Georgia,"Times New Roman",serif;
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -71,7 +73,7 @@ header{
    med "Lejlighed"-labelen. */
 .occasion-raekke{
   display:flex;
-  align-items:baseline;
+  align-items:flex-start;   /* to lige hoeje kolonner - de flugter linje for linje */
   justify-content:space-between;
   gap:12px;
   margin:0 2px 12px;
@@ -85,12 +87,33 @@ h1{
   line-height:1;
 }
 
+/* Vejret staar i to linjer, spejlvendt af "Lejlighed" + selecten til venstre:
+   den lille linje oeverst, den store under. Maalene herunder er sat saa de to
+   kolonner faar samme hoejde og deler grundlinje paa begge linjer. */
 .weather{
-  font-size:12px;
-  color:var(--ink-soft);
-  letter-spacing:.06em;
-  text-transform:uppercase;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:7px;                  /* samme mellemrum som i .occasion */
+  text-align:right;
   white-space:nowrap;
+  font-family:var(--font-label);
+}
+
+.weather-temp{
+  font-size:13px;
+  line-height:1.25;
+  color:var(--ink-soft);
+}
+
+/* Samme skriftstoerrelse og lodrette maal som selecten (padding + dens 1px kant),
+   saa "Regn" staar praecis i hoejde med det valgte punkt og de to kolonner
+   bliver lige hoeje. */
+.weather-navn{
+  font-size:15px;
+  line-height:1.25;
+  color:var(--ink);
+  padding:10px 0;
 }
 
 main{flex:1;padding:0 20px 20px}
@@ -299,20 +322,31 @@ main{flex:1;padding:0 20px 20px}
 }
 
 .occasion label{
-  font-size:11px;
-  letter-spacing:.08em;
-  text-transform:uppercase;
+  font-family:var(--font-label);
+  font-size:13px;
+  line-height:1.25;
   color:var(--ink-soft);
 }
 
+/* appearance:none er noedvendig: Safari ignorerer padding paa en native select
+   og giver den sin egen faste hoejde, saa boksen ville blive 22px her og ~39px
+   i Chrome. Uden den kan vejret til hoejre ikke flugte paalideligt. Pilen
+   tegnes derfor selv som baggrundsbillede. */
 .occasion select{
-  font:inherit;
-  font-size:14px;
+  appearance:none;
+  -webkit-appearance:none;
+  font-family:var(--font-label);
+  font-size:15px;
+  line-height:1.25;
   color:var(--ink);
-  background:var(--card);
+  background-color:var(--card);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%236B6A66' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 14px center;
+  background-size:11px;
   border:1px solid var(--line);
   border-radius:999px;
-  padding:8px 14px;
+  padding:9px 36px 9px 16px;
   cursor:pointer;
 }
 

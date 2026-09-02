@@ -12,11 +12,11 @@
 <meta name="apple-mobile-web-app-title" content="Skabet">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@400;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <!-- ?v= tvinger Safari til at hente filen paa ny. Bump datoen naar du aendrer
      style.css eller script.js - ellers kan telefonen sidde fast paa en gammel
      udgave, selvom den nye er pushet. -->
-<link rel="stylesheet" href="style.css?v=20260902b">
+<link rel="stylesheet" href="style.css?v=20260902c">
 </head>
 <body>
 
@@ -63,7 +63,11 @@
         <option value="arbejde">Arbejde</option>
       </select>
     </div>
-    <span class="weather" id="weather">9–14° · overskyet</span>
+    <!-- To linjer, saa de flugter med "Lejlighed" og selecten til venstre. -->
+    <span class="weather" id="weather">
+      <span class="weather-temp" id="weatherTemp">9–14°</span>
+      <span class="weather-navn" id="weatherNavn">Overskyet</span>
+    </span>
   </div>
 
   <div class="lay" id="lay">
@@ -146,6 +150,6 @@
   </form>
 </dialog>
 
-<script src="script.js?v=20260902b" defer></script>
+<script src="script.js?v=20260902c" defer></script>
 </body>
 </html>

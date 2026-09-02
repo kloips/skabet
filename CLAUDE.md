@@ -210,6 +210,14 @@ andre.
   det være fordi en af de tre er blevet uoverskuelig, ikke på forhånd.
 - CSS-variabler til farver og mål, defineret i `:root`. Ingen hardcodede
   hex-værdier længere nede i filen.
+- To skrifttyper: `Instrument Serif` til titlen, og `Bitter` (variablen
+  `--font-label`) til lejlighed og vejr. Vil du prøve en anden, skal både
+  `<link>`-tagget i `index.html` og `--font-label` rettes. Nære alternativer:
+  `Zilla Slab`, `Rokkitt`, `Arvo`.
+- `.occasion select` har `appearance:none` med en selvtegnet pil. Det er
+  **ikke** pynt: Safari ignorerer `padding` på en native `<select>` og giver
+  den sin egen faste højde (22px mod ~39px i Chrome). Uden `appearance:none`
+  kan vejret til højre ikke flugte pålideligt i begge browsere.
 - `[hidden]{display:none !important}` står med vilje øverst i `style.css`.
   Uden den ville en almindelig `display:flex`-regel vinde over browserens
   egen `[hidden]`-regel, så `el.hidden = true` ikke ville skjule noget —

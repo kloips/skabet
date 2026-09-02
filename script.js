@@ -186,7 +186,8 @@ rebuildItems();
 
 const lay           = document.getElementById("lay");
 const meta          = document.getElementById("meta");
-const weatherEl     = document.getElementById("weather");
+const weatherTemp   = document.getElementById("weatherTemp");
+const weatherNavn   = document.getElementById("weatherNavn");
 const favoritesList = document.getElementById("favoritesList");
 const favoritesEmpty= document.getElementById("favoritesEmpty");
 const favoriteBtn   = document.getElementById("favorite");
@@ -738,7 +739,10 @@ async function init(){
   if (w){
     temp = w.max;                // hoejeste forventede temperatur i dag
     regnvejr = REGN_KODER.has(w.weathercode);
-    weatherEl.textContent = `${Math.round(w.min)}–${Math.round(w.max)}° · ${weatherCodes[w.weathercode] || "ukendt vejr"}`;
+    // Temperaturen oeverst, vejrtypen under - vejrkoderne staar med lille begyndelsesbogstav.
+    const vejrnavn = weatherCodes[w.weathercode] || "ukendt vejr";
+    weatherTemp.textContent = `${Math.round(w.min)}–${Math.round(w.max)}°`;
+    weatherNavn.textContent = vejrnavn.charAt(0).toUpperCase() + vejrnavn.slice(1);
   }
   renderFavorites();
   shuffle();
