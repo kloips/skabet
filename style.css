@@ -324,36 +324,96 @@ main{flex:1;padding:0 20px 20px}
   gap:7px;
 }
 
-.occasion label{
+.occasion-label{
   font-family:var(--font-label);
   font-size:15px;
   line-height:1.25;
   color:var(--ink-soft);
 }
 
-/* appearance:none er noedvendig: Safari ignorerer padding paa en native select
-   og giver den sin egen faste hoejde, saa boksen ville blive 22px her og ~39px
-   i Chrome. Uden den kan vejret til hoejre ikke flugte paalideligt. Pilen
-   tegnes derfor selv som baggrundsbillede. */
-.occasion select{
-  appearance:none;
-  -webkit-appearance:none;
+.vaelger{position:relative}
+
+/* Knappen har praecis samme maal som den <select> den erstattede
+   (9px + 9px padding + 1px kant + 18,75px tekst = 38,75px), fordi vejret til
+   hoejre er sat op til at flugte med den. Aendrer du padding eller
+   skriftstoerrelse her, skal .weather-temp og .weather-navn justeres med. */
+.vaelger-knap{
+  display:flex;
+  align-items:center;
+  gap:10px;
   font-family:var(--font-label);
   font-size:15px;
   line-height:1.25;
   color:var(--ink);
-  background-color:var(--card);
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%236B6A66' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;
-  background-position:right 14px center;
-  background-size:11px;
+  background:var(--card);
   border:1px solid var(--line);
   border-radius:999px;
-  padding:9px 36px 9px 16px;
+  padding:9px 16px;
   cursor:pointer;
 }
 
-.occasion select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.vaelger-knap:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.vaelger-pil{
+  width:11px;
+  height:8px;
+  flex:none;
+  fill:none;
+  stroke:var(--ink-soft);
+  stroke-width:1.6;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  transition:transform .22s cubic-bezier(.22,.61,.36,1);
+}
+
+.vaelger-knap[aria-expanded="true"] .vaelger-pil{transform:rotate(180deg)}
+
+.vaelger-liste{
+  position:absolute;
+  top:calc(100% + 8px);
+  left:0;
+  min-width:max(100%,190px);
+  z-index:15;             /* over flat-layets ikoner, under footeren */
+  margin:0;
+  padding:6px;
+  list-style:none;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:0 14px 30px rgba(23,24,26,.13);
+  transform-origin:top left;
+}
+
+.vaelger-punkt{
+  font-family:var(--font-label);
+  font-size:15px;
+  line-height:1.25;
+  color:var(--ink);
+  padding:11px 14px;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+.vaelger-punkt[aria-selected="true"]{
+  color:var(--accent);
+  font-weight:600;
+  background:rgba(31,77,61,.07);
+}
+
+/* Folder ud fra knappen, samme princip som hovedmenuen - bare hurtigere,
+   fordi panelet er mindre. */
+@keyframes vaelger-ind{
+  0%   {opacity:0; transform:translateY(-6px) scale(.96)}
+  100% {opacity:1; transform:translateY(0)    scale(1)}
+}
+
+@keyframes vaelger-ud{
+  0%   {opacity:1; transform:translateY(0)    scale(1)}
+  100% {opacity:0; transform:translateY(-4px) scale(.98)}
+}
+
+.vaelger-liste.aaben{animation:vaelger-ind .2s cubic-bezier(.22,.61,.36,1) both}
+.vaelger-liste.lukker{animation:vaelger-ud .15s ease-in both}   /* matcher VAELGER_LUK_MS i script.js */
 
 /* Flat-lay: jakke, troeje, t-shirt, bukser og sko i hver sin fulde raekke. */
 .lay{
@@ -579,7 +639,9 @@ dialog h2{
      Lukningen styres af en timer i JS, saa den virker ogsaa uden animation. */
   .menu.aaben,.menu.lukker,.menu.aaben .menu-item{animation:none}
   .menu.lukker{opacity:0}
-  .mi-streg,.mi-loekke{transition:none}
+  .mi-streg,.mi-loekke,.vaelger-pil{transition:none}
+  .vaelger-liste.aaben,.vaelger-liste.lukker{animation:none}
+  .vaelger-liste.lukker{opacity:0}
 }
 
 @media (min-width:520px){

@@ -251,10 +251,18 @@ andre.
   `--font-label`) til lejlighed og vejr. Vil du prøve en anden, skal både
   `<link>`-tagget i `index.html` og `--font-label` rettes. Nære alternativer:
   `Zilla Slab`, `Rokkitt`, `Arvo`.
-- `.occasion select` har `appearance:none` med en selvtegnet pil. Det er
-  **ikke** pynt: Safari ignorerer `padding` på en native `<select>` og giver
-  den sin egen faste højde (22px mod ~39px i Chrome). Uden `appearance:none`
-  kan vejret til højre ikke flugte pålideligt i begge browsere.
+- Lejlighedsvælgeren er **ikke** en `<select>`, men en knap plus en liste
+  (`.vaelger` i `style.css`, `byggVaelger()` i `script.js`). Browserens
+  indbyggede dropdown kan ikke styles, og Safari ignorerer oveni købet
+  `padding` på en native `<select>` og giver den sin egen faste højde
+  (22px mod ~39px i Chrome) — så den kunne heller ikke flugte pålideligt
+  med vejret. Punkterne bygges fra `OCCASIONS`, så navnene kun står ét
+  sted. Lukningen bruger en timer (`VAELGER_LUK_MS`) af samme grund som
+  hovedmenuen.
+- **Knappens højde er 38,75px og hænger sammen med vejret til højre.**
+  `.weather-temp` (18px) + `.weather-navn` (32px) er valgt så de to linjer
+  tilsammen fylder præcis det samme som label + knap. Ændrer du padding
+  eller skriftstørrelse ét af stederne, holder bundene op med at flugte.
 - `[hidden]{display:none !important}` står med vilje øverst i `style.css`.
   Uden den ville en almindelig `display:flex`-regel vinde over browserens
   egen `[hidden]`-regel, så `el.hidden = true` ikke ville skjule noget —

@@ -16,7 +16,7 @@
 <!-- ?v= tvinger Safari til at hente filen paa ny. Bump datoen naar du aendrer
      style.css eller script.js - ellers kan telefonen sidde fast paa en gammel
      udgave, selvom den nye er pushet. -->
-<link rel="stylesheet" href="style.css?v=20260902j">
+<link rel="stylesheet" href="style.css?v=20260902k">
 </head>
 <body>
 
@@ -52,16 +52,19 @@
 <section class="view" id="view-outfit">
   <!-- Vejret staar her og ikke i headeren, saa det flugter med "Lejlighed". -->
   <div class="occasion-raekke">
+    <!-- Egen menu i stedet for en <select>: browserens indbyggede dropdown
+         kan ikke styles. Punkterne bygges fra OCCASIONS i script.js. -->
     <div class="occasion">
-      <label for="occasion">Lejlighed</label>
-      <select id="occasion">
-        <option value="alle">Alt</option>
-        <option value="fint">Fint tøj</option>
-        <option value="foedselsdag">Fødselsdag</option>
-        <option value="skole">Skole</option>
-        <option value="oellgaard">ØLLGAARD</option>
-        <option value="arbejde">Arbejde</option>
-      </select>
+      <span class="occasion-label" id="occasionLabel">Lejlighed</span>
+      <div class="vaelger">
+        <button class="vaelger-knap" id="occasionBtn" type="button"
+                aria-haspopup="listbox" aria-expanded="false"
+                aria-labelledby="occasionLabel occasionVaerdi">
+          <span id="occasionVaerdi">Alt</span>
+          <svg class="vaelger-pil" viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1l5 5 5-5"/></svg>
+        </button>
+        <ul class="vaelger-liste" id="occasionListe" role="listbox" hidden></ul>
+      </div>
     </div>
     <!-- To linjer, saa de flugter med "Lejlighed" og selecten til venstre. -->
     <span class="weather" id="weather">
@@ -150,6 +153,6 @@
   </form>
 </dialog>
 
-<script src="script.js?v=20260902j" defer></script>
+<script src="script.js?v=20260902k" defer></script>
 </body>
 </html>

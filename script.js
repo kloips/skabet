@@ -192,7 +192,9 @@ const favoritesList = document.getElementById("favoritesList");
 const favoritesEmpty= document.getElementById("favoritesEmpty");
 const favoriteBtn   = document.getElementById("favorite");
 const addItemBtn    = document.getElementById("addItemBtn");
-const occasionEl    = document.getElementById("occasion");
+const occasionBtn    = document.getElementById("occasionBtn");
+const occasionListe  = document.getElementById("occasionListe");
+const occasionVaerdi = document.getElementById("occasionVaerdi");
 const menuBtn       = document.getElementById("menuBtn");
 const menuEl        = document.getElementById("menu");
 const footerEl      = document.getElementById("footer");
@@ -657,12 +659,79 @@ wardrobeEl.addEventListener("click", e => {
 
 document.getElementById("shuffle").addEventListener("click", shuffle);
 
+/*---------------------------------------------------------------
+   Lejlighedsvaelgeren. Egen menu i stedet for en <select>, fordi
+   browserens indbyggede dropdown ikke kan styles. Punkterne bygges
+   fra OCCASIONS, saa navnene kun staar ét sted.
+----------------------------------------------------------------*/
+const VAELGER_LUK_MS = 150;   /* skal matche varigheden paa vaelger-ind i style.css */
+let vaelgerAaben = false;
+let vaelgerTimer = null;
+
+function byggVaelger(){
+  occasionListe.innerHTML = "";
+  Object.entries(OCCASIONS).forEach(([noegle, o]) => {
+    const li = document.createElement("li");
+    li.role = "option";
+    li.className = "vaelger-punkt";
+    li.dataset.value = noegle;
+    li.textContent = o.navn;
+    occasionListe.append(li);
+  });
+}
+
+function visValgtLejlighed(){
+  occasionVaerdi.textContent = OCCASIONS[occasion].navn;
+  occasionListe.querySelectorAll(".vaelger-punkt").forEach(li => {
+    li.setAttribute("aria-selected", String(li.dataset.value === occasion));
+  });
+}
+
+function aabnVaelger(){
+  clearTimeout(vaelgerTimer);
+  vaelgerAaben = true;
+  occasionListe.classList.remove("lukker");
+  occasionListe.hidden = false;
+  void occasionListe.offsetWidth;        // tving reflow, saa animationen starter forfra
+  occasionListe.classList.add("aaben");
+  occasionBtn.setAttribute("aria-expanded", "true");
+}
+
+function lukVaelger(){
+  if (!vaelgerAaben) return;
+  clearTimeout(vaelgerTimer);
+  vaelgerAaben = false;
+  occasionListe.classList.remove("aaben");
+  occasionListe.classList.add("lukker");
+  occasionBtn.setAttribute("aria-expanded", "false");
+  vaelgerTimer = setTimeout(() => {
+    occasionListe.hidden = true;
+    occasionListe.classList.remove("lukker");
+  }, VAELGER_LUK_MS);
+}
+
+occasionBtn.addEventListener("click", e => {
+  e.stopPropagation();
+  vaelgerAaben ? lukVaelger() : aabnVaelger();
+});
+
 /* Et nyt valg gemmes og giver et helt nyt saet med det samme - laaste kategorier
    beholder dog deres stykke, praecis som ved et almindeligt tryk paa knappen. */
-occasionEl.addEventListener("change", () => {
-  occasion = occasionEl.value;
+occasionListe.addEventListener("click", e => {
+  const li = e.target.closest(".vaelger-punkt");
+  if (!li) return;
+  occasion = li.dataset.value;
   localStorage.setItem(OCCASION_KEY, occasion);
+  visValgtLejlighed();
+  lukVaelger();
   shuffle();
+});
+
+document.addEventListener("click", e => {
+  if (vaelgerAaben && !occasionListe.contains(e.target)) lukVaelger();
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") lukVaelger();
 });
 
 favoriteBtn.addEventListener("click", () => {
@@ -793,7 +862,8 @@ function cycleSlot(slot){
 }
 
 async function init(){
-  occasionEl.value = occasion;      // menuen viser det valg der blev gemt sidst
+  byggVaelger();
+  visValgtLejlighed();              // vaelgeren viser det valg der blev gemt sidst
   const w = await fetchWeather();
   if (w){
     temp = w.max;                // hoejeste forventede temperatur i tidsrummet VEJR_FRA-VEJR_TIL
