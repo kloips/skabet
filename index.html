@@ -16,7 +16,7 @@
 <!-- ?v= tvinger Safari til at hente filen paa ny. Bump datoen naar du aendrer
      style.css eller script.js - ellers kan telefonen sidde fast paa en gammel
      udgave, selvom den nye er pushet. -->
-<link rel="stylesheet" href="style.css?v=20260902t">
+<link rel="stylesheet" href="style.css?v=20260902u">
 </head>
 <body>
 
@@ -115,7 +115,9 @@
 <section class="view" id="view-favoritter" hidden>
   <h2 class="view-title">Favorit Outfits</h2>
   <p class="tom-besked" id="favoritesEmpty" hidden>Du har ingen gemte sæt endnu. Tryk på ☆ under et outfit for at gemme det.</p>
-  <div class="favorites-list" id="favoritesList"></div>
+  <!-- Et saet ad gangen, bladres vandret med scroll-snap. Egne klasser og
+       hoejder - flat-layets .lay/.slot/.garment maa ikke genbruges her. -->
+  <div class="fav-baand" id="favoritesList"></div>
 </section>
 
 </main>
@@ -168,6 +170,6 @@
   </form>
 </dialog>
 
-<script src="script.js?v=20260902t" defer></script>
+<script src="script.js?v=20260902u" defer></script>
 </body>
 </html>

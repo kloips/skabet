@@ -653,12 +653,76 @@ main{flex:1;padding:0 20px 20px}
   background:var(--card);
 }
 
-.favorites-list{display:flex;flex-wrap:wrap;gap:6px}
+/* Favoritter: et saet ad gangen, bladret vandret. Egne klasser og egne
+   hoejder - flat-layets .lay/.slot/.garment er bundet til --h-* og
+   container-type paa selve slottet og maa ikke genbruges her. */
+.fav-baand{
+  display:flex;
+  overflow-x:auto;
+  scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
 
-.fav-chip{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.fav-baand::-webkit-scrollbar{display:none}
 
-.fav-remove{color:var(--ink-soft);font-size:14px;line-height:1}
-.fav-remove:hover{color:var(--ink)}
+.fav-side{
+  flex:0 0 100%;
+  min-width:0;
+  scroll-snap-align:start;
+  scroll-snap-stop:always;   /* et bladr ad gangen, ingen gennemflyvning */
+}
+
+/* Positionsviseren staar paa hver side i stedet for at blive opdateret fra JS
+   under scroll - saa er der ingen lytter der skal holdes ved lige. */
+.fav-tael{
+  font-family:var(--font-label);
+  font-size:13px;
+  color:var(--ink-soft);
+  margin:0 2px 8px;
+}
+
+/* Hele saettet skal kunne ses uden at scrolle lodret paa en telefon. */
+.fav-stak{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  height:min(62svh, 520px);
+}
+
+.fav-plads{
+  position:relative;
+  flex:1;
+  container-type:size;       /* goer cqw/cqh tilgaengelig, som i flat-layet */
+}
+
+.fav-plads.tom{
+  border:1px dashed var(--line);
+  border-radius:10px;
+}
+
+.fav-billede{
+  position:absolute;
+  top:50%;
+  left:50%;
+  width:100cqh;              /* byttet om, fordi billedet roteres 90 grader */
+  height:100cqw;
+  object-fit:contain;
+  transform:translate(-50%,-50%) rotate(90deg);
+}
+
+.fav-mangler{
+  font-family:var(--font-label);
+  font-size:13px;
+  color:var(--ink-soft);
+  margin:10px 2px 0;
+}
+
+.fav-handlinger{
+  display:flex;
+  gap:10px;
+  margin-top:14px;
+}
 
 footer{
   position:sticky;

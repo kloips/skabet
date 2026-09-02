@@ -404,18 +404,37 @@ function erBaaretIDag(){
   return !!post && post.ids.join(",") === outfitKey(current);
 }
 
+/* Raekkefoelgen et gemt saet vises i - samme som flat-layet. Bevidst ikke CATS,
+   som ogsaa indeholder "shorts"; den kategori har intet slot, og et shorts-par
+   er gemt under noeglen "bottom". */
+const FAV_SLOTS = ["outerwear", "mid", "top", "bottom", "shoes"];
+
 function renderFavorites(){
   const favorites = loadFavorites();
   favoritesEmpty.hidden = favorites.length > 0;
   favoritesList.innerHTML = "";
-  favorites.forEach(record => {
-    const names = CATS.map(cat => items.find(i => i.id === record[cat])?.name).filter(Boolean).join(" · ");
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "chip fav-chip";
-    btn.dataset.favId = record.id;
-    btn.innerHTML = `${names} <span class="fav-remove" data-remove aria-label="Fjern favorit">×</span>`;
-    favoritesList.append(btn);
+
+  favorites.forEach((record, i) => {
+    // Et gemt id kan pege paa toej der ikke findes mere. Pladsen bliver staaende
+    // som et tomt felt, og saettet markeres - det kan stadig hentes frem.
+    const stykker = FAV_SLOTS.map(cat => items.find(item => item.id === record[cat]) || null);
+    const mangler = stykker.some(item => !item);
+
+    const side = document.createElement("article");
+    side.className = "fav-side";
+    side.innerHTML = `
+      <p class="fav-tael">${i + 1} af ${favorites.length}</p>
+      <div class="fav-stak">
+        ${stykker.map(item => item
+          ? `<div class="fav-plads"><img class="fav-billede" src="${item.image}" alt="${item.name}" loading="lazy"></div>`
+          : `<div class="fav-plads tom"></div>`).join("")}
+      </div>
+      ${mangler ? `<p class="fav-mangler">Et stykke i dette sæt findes ikke længere</p>` : ""}
+      <div class="fav-handlinger">
+        <button class="primary" type="button" data-hent="${record.id}">Hent frem</button>
+        <button class="ghost" type="button" data-slet-fav="${record.id}" data-indeks="${i}">Fjern</button>
+      </div>`;
+    favoritesList.append(side);
   });
 }
 
@@ -432,10 +451,15 @@ function loadFavorite(record){
   updateWoreButton();
 }
 
-function removeFavorite(id){
-  saveFavorites(loadFavorites().filter(f => f.id !== id));
+function removeFavorite(id, indeks){
+  const tilbage = loadFavorites().filter(f => f.id !== id);
+  saveFavorites(tilbage);
   renderFavorites();
   updateFavoriteButton();
+  // Bliv staaende samme sted i baandet - eller paa den sidste, hvis det var
+  // den sidste der blev fjernet. Ellers hopper man tilbage til nummer et.
+  const ny = Math.min(indeks, tilbage.length - 1);
+  if (ny >= 0) favoritesList.scrollLeft = ny * favoritesList.clientWidth;
 }
 
 function updateFavoriteButton(){
@@ -1028,17 +1052,21 @@ undoBtn.addEventListener("click", () => {
 });
 
 favoritesList.addEventListener("click", e => {
-  const btn = e.target.closest(".fav-chip");
-  if (!btn) return;
-  const id = Number(btn.dataset.favId);
-  if (e.target.closest("[data-remove]")){
-    removeFavorite(id);
+  const hent = e.target.closest("[data-hent]");
+  if (hent){
+    const record = loadFavorites().find(f => String(f.id) === hent.dataset.hent);
+    if (record){
+      loadFavorite(record);
+      visView("outfit");      // saettet hentes frem der hvor man kan se det
+    }
     return;
   }
-  const record = loadFavorites().find(f => f.id === id);
-  if (record){
-    loadFavorite(record);
-    visView("outfit");        // saettet hentes frem der hvor man kan se det
+
+  const slet = e.target.closest("[data-slet-fav]");
+  if (slet){
+    // Der er ingen fortryd her, og et fejltryk under bladring er let at lave.
+    if (!confirm("Fjern dette sæt fra favoritterne?")) return;
+    removeFavorite(Number(slet.dataset.sletFav), Number(slet.dataset.indeks));
   }
 });
 
