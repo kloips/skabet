@@ -193,6 +193,7 @@ const favoritesEmpty= document.getElementById("favoritesEmpty");
 const favoriteBtn   = document.getElementById("favorite");
 const addItemBtn    = document.getElementById("addItemBtn");
 const woreBtn       = document.getElementById("woreBtn");
+const undoBtn       = document.getElementById("undoBtn");
 const occasionBtn    = document.getElementById("occasionBtn");
 const occasionListe  = document.getElementById("occasionListe");
 const occasionVaerdi = document.getElementById("occasionVaerdi");
@@ -212,6 +213,11 @@ const CATS = ["outerwear", "mid", "top", "bottom", "shorts", "shoes"];
 
 const lockedCats = new Set();   // kategorier der skal beholde deres nuvaerende toej
 let current = {};
+
+/* Det forrige hele saet, kun til fortryd-knappen. Lever i hukommelsen og
+   forsvinder med vilje ved genindlaesning - der er ingen historik-stak,
+   kun et enkelt skridt tilbage. */
+let forrigeSaet = null;
 let temp = 14;                  // fallback hvis vejret ikke kan hentes
 
 /* Koebenhavn, ingen API-noegle noedvendig. */
@@ -421,6 +427,11 @@ function updateWoreButton(){
   woreBtn.setAttribute("aria-pressed", String(erBaaretIDag()));
 }
 
+/* Knappen er slaaet fra indtil der er et saet at gaa tilbage til. */
+function updateUndoButton(){
+  undoBtn.disabled = !forrigeSaet;
+}
+
 /* Lejligheder. Hver enkelt er et interval paa paenhed - se filtrerPaaLejlighed()
    for hvad der sker naar en kategori ikke har noget i intervallet. */
 const OCCASIONS = {
@@ -587,12 +598,16 @@ function render(outfit){
 }
 
 function shuffle(){
+  // Gemmes foer det nye saet bygges. Kun naar der allerede ER et saet, saa
+  // den foerste shuffle ved opstart ikke efterlader et tomt "forrige saet".
+  if (Object.keys(current).length) forrigeSaet = current;
   current = buildOutfit();
   foersteSaet = false;   // herefter er alle jakker i spil igen
   render(current);
   saveHistory(current);
   updateFavoriteButton();
   updateWoreButton();
+  updateUndoButton();
 }
 
 /*---------------------------------------------------------------
@@ -836,6 +851,20 @@ woreBtn.addEventListener("click", () => {
   const log   = loadLog().filter(p => p.date !== dag);
   if (!samme) log.push({ date: dag, ids: outfitIds(current) });
   saveLog(log);
+  updateWoreButton();
+});
+
+/* Fortryd. Bytter det viste saet med det forrige, saa et nyt tryk bytter
+   tilbage igen - knappen vipper mellem de to seneste saet. Laase behandles
+   ikke saerskilt: saettet hentes frem som det saa ud, ligesom en favorit. */
+undoBtn.addEventListener("click", () => {
+  if (!forrigeSaet) return;
+  const viste = current;
+  current = forrigeSaet;
+  forrigeSaet = viste;
+  render(current);
+  saveHistory(current);          // saa gaarsdags-sammenligningen matcher skaermen
+  updateFavoriteButton();
   updateWoreButton();
 });
 

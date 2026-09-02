@@ -16,7 +16,7 @@
 <!-- ?v= tvinger Safari til at hente filen paa ny. Bump datoen naar du aendrer
      style.css eller script.js - ellers kan telefonen sidde fast paa en gammel
      udgave, selvom den nye er pushet. -->
-<link rel="stylesheet" href="style.css?v=20260902l">
+<link rel="stylesheet" href="style.css?v=20260902m">
 </head>
 <body>
 
@@ -123,6 +123,9 @@
     <button class="primary" id="shuffle">Giv mig et sæt</button>
     <button class="ghost" id="favorite" type="button" aria-pressed="false" aria-label="Gem som favorit">☆</button>
     <button class="ghost" id="woreBtn" type="button" aria-pressed="false" aria-label="Det tog jeg paa i dag">✓</button>
+    <!-- disabled staar her og ikke kun i JS, saa knappen ogsaa er slaaet fra
+         i det oejeblik siden vises, foer vejret er hentet og shuffle er kaldt. -->
+    <button class="ghost" id="undoBtn" type="button" disabled aria-label="Fortryd, tilbage til forrige saet">↺</button>
   </div>
   <div class="footer-group" data-footer="skab" hidden>
     <button class="primary" id="addItemBtn" type="button">+ Tilføj tøj</button>
@@ -154,6 +157,6 @@
   </form>
 </dialog>
 
-<script src="script.js?v=20260902l" defer></script>
+<script src="script.js?v=20260902m" defer></script>
 </body>
 </html>
