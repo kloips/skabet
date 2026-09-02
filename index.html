@@ -18,7 +18,16 @@
 <body>
 
 <header>
-  <button class="menu-btn" id="menuBtn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu">☰</button>
+  <button class="menu-btn" id="menuBtn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu">
+    <!-- De tre streger er ens - det er kun deres transform der goer dem til
+         enten et menu-ikon eller pilespids + skaft. Loekken tegnes ind til sidst. -->
+    <svg class="menu-ikon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path class="mi-loekke" d="M14.5 10 A4.6 4.6 0 0 1 14.5 19.2 L7.5 19.2"/>
+      <line class="mi-streg mi-top"  x1="4" y1="12" x2="20" y2="12"/>
+      <line class="mi-streg mi-midt" x1="4" y1="12" x2="20" y2="12"/>
+      <line class="mi-streg mi-bund" x1="4" y1="12" x2="20" y2="12"/>
+    </svg>
+  </button>
   <div class="header-hoejre">
     <h1>Skabet</h1>
     <span class="weather" id="weather">9–14° · overskyet</span>

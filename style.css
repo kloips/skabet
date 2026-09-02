@@ -94,18 +94,60 @@ main{flex:1;padding:0 20px 20px}
 
 /* Menu-knap i headeren, og selve menuen som en liste under den. */
 .menu-btn{
-  font-size:20px;
-  line-height:1;
-  padding:6px 10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:42px;
+  height:42px;
+  padding:0;
   border-radius:10px;
   background:var(--card);
   border:1px solid var(--line);
   color:var(--ink);
-  transition:transform .25s cubic-bezier(.22,.61,.36,1);
 }
 
-/* Ikonet drejer med, saa knappen selv viser at menuen er foldet ud. */
-.menu-btn[aria-expanded="true"]{transform:rotate(90deg)}
+/* Menu-ikonet forvandler sig til en "gaa tilbage"-pil naar menuen er aaben.
+   De tre streger er identiske i markup - forskellen er kun deres transform:
+   den oeverste og nederste svinger ud som pilespids, den midterste bliver
+   skaftet, og loekken tegner sig ind bagefter via stroke-dashoffset. */
+.menu-ikon{
+  width:24px;
+  height:24px;
+  display:block;
+}
+
+.menu-ikon line,
+.menu-ikon path{
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2.2;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+
+.mi-streg{
+  transform-box:view-box;      /* saa transform-origin regnes i viewBox-koordinater */
+  transform-origin:4px 12px;   /* venstre ende af stregen - der hvor pilespidsen skal sidde */
+  transition:transform .4s cubic-bezier(.65,.05,.2,1);
+}
+
+/* Lukket: tre vandrette streger. Samme funktioner og raekkefoelge som i den
+   aabne tilstand, saa browseren kan interpolere hvert led for sig. */
+.mi-top {transform:translate(0px,-6px) rotate(0deg) scaleX(1)}
+.mi-midt{transform:translate(0px,0px)  rotate(0deg) scaleX(1)}
+.mi-bund{transform:translate(0px,6px)  rotate(0deg) scaleX(1)}
+
+.mi-loekke{
+  stroke-dasharray:22;         /* ca. laengden af buen plus stregen - hele loekken */
+  stroke-dashoffset:22;
+  transition:stroke-dashoffset .36s cubic-bezier(.65,.05,.2,1) .1s;
+}
+
+/* Aaben: pilespids, skaft og loekke. */
+.menu-btn[aria-expanded="true"] .mi-top {transform:translate(0px,-2px) rotate(-45deg) scaleX(.42)}
+.menu-btn[aria-expanded="true"] .mi-midt{transform:translate(0px,-2px) rotate(0deg)   scaleX(.66)}
+.menu-btn[aria-expanded="true"] .mi-bund{transform:translate(0px,-2px) rotate(45deg)  scaleX(.42)}
+.menu-btn[aria-expanded="true"] .mi-loekke{stroke-dashoffset:0}
 
 .menu{
   position:sticky;
@@ -498,6 +540,7 @@ dialog h2{
      Lukningen styres af en timer i JS, saa den virker ogsaa uden animation. */
   .menu.aaben,.menu.lukker,.menu.aaben .menu-item{animation:none}
   .menu.lukker{opacity:0}
+  .mi-streg,.mi-loekke{transition:none}
 }
 
 @media (min-width:520px){

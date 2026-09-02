@@ -139,8 +139,19 @@ visninger (`visView()` i `script.js`):
 | Favorit Outfits | `#view-favoritter` | gemte sæt |
 
 Menuen folder sig ud fra ikonet (`@keyframes menu-fold-ud`/`-ind` i
-`style.css`), og punkterne daler forskudt ind bagefter. ☰-knappen drejer
-90° via `[aria-expanded="true"]`. Selve lukningen styres af en **timer**
+`style.css`), og punkterne daler forskudt ind bagefter.
+
+Menu-ikonet er en inline-SVG i knappen, ikke et tegn eller en billedfil.
+De tre streger (`.mi-streg`) er identiske i markup — når menuen åbnes,
+svinger den øverste og nederste ud som pilespids (`rotate(±45deg)`), den
+midterste bliver skaftet, og løkken (`.mi-loekke`) tegner sig ind via
+`stroke-dashoffset`, så ikonet forvandler sig til en "gå tilbage"-pil.
+Begge tilstande bruger **samme transform-funktioner i samme rækkefølge**
+(`translate` → `rotate` → `scaleX`); ellers falder browseren tilbage på
+matrix-interpolation og bevægelsen bliver grim. `transform-box:view-box`
+er nødvendig for at `transform-origin` regnes i viewBox-koordinater.
+
+Selve lukningen styres af en **timer**
 (`MENU_LUK_MS`), ikke af `animationend` — sidstnævnte udløses aldrig hvis
 brugeren har slået animationer fra i systemet, og menuen ville så aldrig
 blive skjult. Ændrer du varigheden i CSS, skal `MENU_LUK_MS` følge med.
