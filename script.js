@@ -452,8 +452,8 @@ lay.addEventListener("click", e => {
     return;
   }
 
-  if (btn.dataset.action === "prev"){ bump(btn); cycleSlot(slot, -1); }
-  if (btn.dataset.action === "next"){ bump(btn); cycleSlot(slot, 1); }
+  if (btn.dataset.action === "prev"){ bump(btn); cycleSlot(slot); }
+  if (btn.dataset.action === "next"){ bump(btn); cycleSlot(slot); }
 });
 
 /* Skalerer et billede ned via canvas, saa det fylder mindre i localStorage.
@@ -515,14 +515,15 @@ function bump(btn){
 }
 
 /* Pilene blader frem/tilbage gennem den paagaeldende kategoris toej. */
-function cycleSlot(slot, direction){
+/* Pilene traekker et tilfaeldigt andet stykke i kategorien - ikke det naeste
+   i raekkefoelgen. Det nuvaerende stykke filtreres fra, saa et tryk altid
+   giver et synligt skift. */
+function cycleSlot(slot){
   const cat = slot.dataset.cat;
   if (!current[cat] || lockedCats.has(cat)) return;   // intet toej, eller laast
-  const pool = items.filter(i => i.category === cat);
-  if (pool.length <= 1) return;
-  const idx     = pool.findIndex(i => i.id === current[cat].id);
-  const nextIdx = (idx + direction + pool.length) % pool.length;
-  current[cat] = pool[nextIdx];
+  const pool = items.filter(i => i.category === cat && i.id !== current[cat].id);
+  if (!pool.length) return;
+  current[cat] = pool[Math.floor(Math.random() * pool.length)];
   renderSlot(slot, current[cat]);
   renderMeta(current);
   saveHistory(current);

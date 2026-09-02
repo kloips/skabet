@@ -96,8 +96,10 @@ deres nuværende stykke ved næste shuffle, og pilene (se nedenfor) gør
 ingenting på en låst kategori.
 
 **Skift enkeltvis:** hvert slot har to pil-knapper (`pil.jpg`, spejlvendt
-for venstre) der blader frem/tilbage gennem den kategoris tøj i rækkefølge
-(`cycleSlot()`), ikke tilfældigt. Et lille "nik" i pilens retning
+for venstre) der trækker et tilfældigt andet stykke i kategorien
+(`cycleSlot()`). Det nuværende stykke filtreres fra puljen, så et tryk
+altid giver et synligt skift. Begge pile gør det samme — retningen har
+kun betydning for animationen. Et lille "nik" i pilens retning
 (`@keyframes bump-left/bump-right`, trigget fra JS) giver visuel feedback
 ved klik — `:active` i CSS er ikke pålideligt nok på iOS Safari uden en
 touch-lytter et sted på siden.
