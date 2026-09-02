@@ -234,6 +234,13 @@ andre.
   gælder efter en større CSS/JS-ændring — Safari kan cache `style.css`/
   `script.js` selv, ikke kun billeder (Indstillinger → Safari → Avanceret →
   Webstedsdata → slet, for at tvinge en frisk hentning under aktiv udvikling).
+- **`style.css` og `script.js` linkes med `?v=<dato>` i `index.html`.** Bump
+  den dato hver gang du ændrer en af de to filer. Uden det kan Safari sidde
+  fast på en gammel `style.css` sammen med en ny `index.html` — og så mangler
+  reglerne til det nye markup, hvilket viser sig som elementer der falder
+  sammen eller forsvinder (fx et menu-ikon uden størrelse). Det er sket flere
+  gange og er nu den faste forklaring at tjekke først, når noget "ikke er
+  opdateret" på telefonen.
 - Tøj-billedet (det faktiske billede af en genstand) har altid klassen
   `garment`, adskilt fra ikon-billeder (lås/pil), så CSS-reglerne for
   rotation/størrelse/crossfade ikke ved et uheld rammer ikonerne.
