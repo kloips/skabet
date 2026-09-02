@@ -120,11 +120,13 @@ over alle tre:
 1. **Navnet** er det vejr der fylder flest timer, ikke det kraftigste.
    Ved lige mange timer vinder det kraftigste. Det var før det kraftigste
    alene, men så døbte to timers torden hele dagen "Torden".
-2. **Detaljelinjen** vises kun hvis der er kraftigere vejr i en del af
-   tidsrummet, og nævner det med klokkeslæt: "torden 16–18". Timetallet
-   lægges +1 til, fordi et symbol gælder timen *fra* det klokkeslæt.
-3. **Regnjakken** tvinges frem hvis bare én time i tidsrummet er våd —
-   uafhængigt af hvad beskrivelsen siger.
+2. **Regnjakken** tvinges frem hvis bare én time i tidsrummet er våd —
+   uafhængigt af hvad beskrivelsen siger. De to ting er med vilje ikke
+   koblet: beskrivelsen fortæller hvad dagen mest er, jakken skal dække
+   det værste der kan ske.
+
+Der har været forsøgt en tredje linje med "torden 16–18". Den er fjernet
+igen — den beskrev reelt det samme to gange.
 
 **Lejlighed:** menuen over flat-layet vælger hvor pænt tøjet skal være.
 Hver lejlighed er et interval på `paenhed` (`OCCASIONS` i `script.js`):

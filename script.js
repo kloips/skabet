@@ -188,7 +188,6 @@ const lay           = document.getElementById("lay");
 const meta          = document.getElementById("meta");
 const weatherTemp   = document.getElementById("weatherTemp");
 const weatherNavn   = document.getElementById("weatherNavn");
-const weatherDetalje= document.getElementById("weatherDetalje");
 const favoritesList = document.getElementById("favoritesList");
 const favoritesEmpty= document.getElementById("favoritesEmpty");
 const favoriteBtn   = document.getElementById("favorite");
@@ -288,21 +287,12 @@ async function fetchWeather(){
     const dominerende = [...antal.entries()]
       .sort((a, b) => b[1] - a[1] || a[0] - b[0])[0][0];
 
-    // Er der kraftigere vejr i en del af tidsrummet, naevnes det med klokkeslaet.
-    const kraftigst = Math.min(...timer.map(t => t.rang));
-    let detalje = "";
-    if (kraftigst < dominerende){
-      const naar = timer.filter(t => t.rang === kraftigst).map(t => t.time);
-      // +1 fordi et symbol gaelder timen FRA det klokkeslaet.
-      detalje = `${VEJR_TYPER[kraftigst].navn} ${Math.min(...naar)}–${Math.max(...naar) + 1}`;
-    }
-
     return {
       min: Math.min(...temps),
       max: Math.max(...temps),
       navn: VEJR_TYPER[dominerende].navn,
-      detalje,
-      // Regnjakken skal frem hvis bare en del af tidsrummet er vaadt.
+      // Regnjakken skal frem hvis bare en del af tidsrummet er vaadt - ogsaa
+      // naar beskrivelsen siger noget andet, fordi den kun naevner det der fylder mest.
       regn: timer.some(t => VEJR_TYPER[t.rang].regn)
     };
   } catch {
@@ -811,9 +801,6 @@ async function init(){
     // Temperaturen oeverst, vejrtypen under - navnene staar med lille begyndelsesbogstav.
     weatherTemp.textContent = `${Math.round(w.min)}–${Math.round(w.max)}°`;
     weatherNavn.textContent = w.navn.charAt(0).toUpperCase() + w.navn.slice(1);
-    // Linjen kan vaere tom, men dens plads bliver staaende - ellers skifter
-    // hoejre kolonne hoejde, og bunden flugter ikke med lejlighedsboksen.
-    weatherDetalje.textContent = w.detalje;
   }
   renderFavorites();
   shuffle();

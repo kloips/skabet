@@ -100,6 +100,10 @@ h1{
   font-family:var(--font-label);
 }
 
+/* Stoerrelserne er valgt saa de to linjer tilsammen fylder praecis lige saa
+   meget som "Lejlighed" + selecten til venstre (18,75 + 7 + 38,75 = 64,5px).
+   Regnestykket er 1,25 * (18 + 32) + 2px mellemrum. Aendrer du den ene
+   skriftstoerrelse, skal den anden foelge med, ellers flugter bundene ikke. */
 .weather-temp{
   font-size:18px;
   line-height:1.25;
@@ -110,19 +114,9 @@ h1{
    Til gengaeld flugter "Regn" ikke laengere med det valgte punkt i selecten
    til venstre - det er et bevidst valg, ikke en fejl. */
 .weather-navn{
-  font-size:18px;
+  font-size:32px;
   line-height:1.25;
   color:var(--ink);
-}
-
-/* Kraftigere vejr i en del af tidsrummet, fx "torden 16-18". Teksten kan
-   vaere tom, men linjen fylder altid - saa er hoejre kolonne lige saa hoej
-   som lejlighedsvalget til venstre, og de to bunde flugter. */
-.weather-detalje{
-  font-size:13px;
-  line-height:1.25;
-  min-height:1.25em;
-  color:var(--ink-soft);
 }
 
 main{flex:1;padding:0 20px 20px}
