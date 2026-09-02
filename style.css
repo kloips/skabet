@@ -58,20 +58,20 @@ body{
   padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
 }
 
-/* Menu-knap og vejr i venstre side, titlen i hoejre. */
+/* Menu-knap i venstre side, titel og vejr i hoejre. */
 header{
   padding:22px 20px 14px;
   display:flex;
-  align-items:center;
+  align-items:flex-start;
   justify-content:space-between;
   gap:12px;
 }
 
-.header-venstre{
+.header-hoejre{
   display:flex;
   flex-direction:column;
-  align-items:flex-start;
-  gap:8px;                   /* vejret staar under menu-knappen */
+  align-items:flex-end;
+  gap:8px;                   /* vejret staar under titlen */
 }
 
 h1{
