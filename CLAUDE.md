@@ -91,6 +91,15 @@ ikke længere nogen temperatur-afhængig fravalg af `mid`/`outerwear` (det
 var oprindeligt sådan, men blev bevidst fjernet). Vejret bruges kun til
 visning i headeren, ikke til at styre valget af tøj.
 
+**Vejr:** hentes fra Open-Meteo som **timedata**, ikke døgnværdier, og
+begrænses til `VEJR_FRA`–`VEJR_TIL` (kl. 10-20) i `fetchWeather()`. Af de
+timer tages laveste og højeste temperatur samt den højeste vejrkode
+(WMO-skalaen er groft sagt sorteret efter kraftighed). Det var før baseret
+på hele døgnet, hvilket betød at en varm eftermiddag kunne give shorts til
+en kold morgen, og at regn kl. 23 kunne tvinge en regnjakke frem. Vil du
+ændre tidsrummet, er det de to konstanter der skal rettes — resten af
+logikken bruger bare `min`/`max`/`weathercode`.
+
 **Lejlighed:** menuen over flat-layet vælger hvor pænt tøjet skal være.
 Hver lejlighed er et interval på `paenhed` (`OCCASIONS` i `script.js`):
 Alt 1-5, Fint tøj 5, Fødselsdag 4-5, Skole 1-4, ØLLGAARD 3-5, Arbejde 1-2.

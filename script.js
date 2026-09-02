@@ -227,14 +227,35 @@ const REGN_KODER = new Set([51,53,55,56,57,61,63,65,66,67,80,81,82,95,96,99]);
 let regnvejr = false;
 let foersteSaet = true;   // regnjakke tvinges kun igennem paa dagens foerste saet
 
+/* Vejret hentes kun for den del af dagen man faktisk er ude, ikke hele doegnet.
+   Foer kiggede den paa doegnets min/max, saa en varm eftermiddag kunne give
+   shorts til en kold morgen, og natteregn kunne tvinge en regnjakke frem. */
+const VEJR_FRA = 10;   // fra kl. 10
+const VEJR_TIL = 20;   // til og med kl. 20
+
 async function fetchWeather(){
   try {
-    const res  = await fetch("https://api.open-meteo.com/v1/forecast?latitude=55.68&longitude=12.57&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=Europe%2FCopenhagen");
+    const res  = await fetch("https://api.open-meteo.com/v1/forecast?latitude=55.68&longitude=12.57&hourly=temperature_2m,weathercode&timezone=Europe%2FCopenhagen&forecast_days=1");
     const data = await res.json();
+    if (!data.hourly || !data.hourly.time) return null;
+
+    // Tidsstemplerne er lokale og ser saadan ud: "2026-09-02T14:00".
+    const idx = data.hourly.time
+      .map((t, i) => [Number(t.slice(11, 13)), i])
+      .filter(([time]) => time >= VEJR_FRA && time <= VEJR_TIL)
+      .map(([, i]) => i);
+
+    if (!idx.length) return null;
+
+    const temps = idx.map(i => data.hourly.temperature_2m[i]);
+    const koder = idx.map(i => data.hourly.weathercode[i]);
+
     return {
-      min: data.daily.temperature_2m_min[0],   // dagens hele forlob, ikke bare lige nu
-      max: data.daily.temperature_2m_max[0],
-      weathercode: data.daily.weathercode[0]
+      min: Math.min(...temps),
+      max: Math.max(...temps),
+      // Hoejeste WMO-kode = groft sagt det kraftigste vejr i vinduet
+      // (skyer < taage < stoevregn < regn < sne < byger < torden).
+      weathercode: Math.max(...koder)
     };
   } catch {
     return null;                  // ingen forbindelse, brug fallback-temperaturen
@@ -737,7 +758,7 @@ async function init(){
   occasionEl.value = occasion;      // menuen viser det valg der blev gemt sidst
   const w = await fetchWeather();
   if (w){
-    temp = w.max;                // hoejeste forventede temperatur i dag
+    temp = w.max;                // hoejeste forventede temperatur i tidsrummet VEJR_FRA-VEJR_TIL
     regnvejr = REGN_KODER.has(w.weathercode);
     // Temperaturen oeverst, vejrtypen under - vejrkoderne staar med lille begyndelsesbogstav.
     const vejrnavn = weatherCodes[w.weathercode] || "ukendt vejr";
