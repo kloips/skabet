@@ -16,7 +16,7 @@
 <!-- ?v= tvinger Safari til at hente filen paa ny. Bump datoen naar du aendrer
      style.css eller script.js - ellers kan telefonen sidde fast paa en gammel
      udgave, selvom den nye er pushet. -->
-<link rel="stylesheet" href="style.css?v=20260902">
+<link rel="stylesheet" href="style.css?v=20260902b">
 </head>
 <body>
 
@@ -31,10 +31,7 @@
       <line class="mi-streg mi-bund" x1="4" y1="12" x2="20" y2="12"/>
     </svg>
   </button>
-  <div class="header-hoejre">
-    <h1>Skabet</h1>
-    <span class="weather" id="weather">9–14° · overskyet</span>
-  </div>
+  <h1>Skabet</h1>
 </header>
 
 <nav class="menu" id="menu" hidden>
@@ -53,16 +50,20 @@
 
 <!-- Vaelg Outfit: selve flat-layet, det man lander paa om morgenen. -->
 <section class="view" id="view-outfit">
-  <div class="occasion">
-    <label for="occasion">Lejlighed</label>
-    <select id="occasion">
-      <option value="alle">Alt</option>
-      <option value="fint">Fint tøj</option>
-      <option value="foedselsdag">Fødselsdag</option>
-      <option value="skole">Skole</option>
-      <option value="oellgaard">ØLLGAARD</option>
-      <option value="arbejde">Arbejde</option>
-    </select>
+  <!-- Vejret staar her og ikke i headeren, saa det flugter med "Lejlighed". -->
+  <div class="occasion-raekke">
+    <div class="occasion">
+      <label for="occasion">Lejlighed</label>
+      <select id="occasion">
+        <option value="alle">Alt</option>
+        <option value="fint">Fint tøj</option>
+        <option value="foedselsdag">Fødselsdag</option>
+        <option value="skole">Skole</option>
+        <option value="oellgaard">ØLLGAARD</option>
+        <option value="arbejde">Arbejde</option>
+      </select>
+    </div>
+    <span class="weather" id="weather">9–14° · overskyet</span>
   </div>
 
   <div class="lay" id="lay">
@@ -145,6 +146,6 @@
   </form>
 </dialog>
 
-<script src="script.js?v=20260902" defer></script>
+<script src="script.js?v=20260902b" defer></script>
 </body>
 </html>
