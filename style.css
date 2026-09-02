@@ -42,6 +42,10 @@
 
 *{box-sizing:border-box;margin:0;padding:0}
 
+/* Skal staa her: en almindelig display-regel (fx display:flex) vinder ellers
+   over browserens egen [hidden]-regel, saa elementet aldrig kan skjules. */
+[hidden]{display:none !important}
+
 html{-webkit-text-size-adjust:100%}
 
 body{
@@ -57,10 +61,11 @@ body{
 header{
   padding:22px 20px 14px;
   display:flex;
-  align-items:baseline;
-  justify-content:space-between;
+  align-items:center;
   gap:12px;
 }
+
+.weather{margin-left:auto}   /* vejr og menu-knap samles i hoejre side */
 
 h1{
   font-family:"Instrument Serif",Georgia,serif;
@@ -79,6 +84,128 @@ h1{
 }
 
 main{flex:1;padding:0 20px 20px}
+
+/* Menu-knap i headeren, og selve menuen som en liste under den. */
+.menu-btn{
+  font-size:20px;
+  line-height:1;
+  padding:6px 10px;
+  border-radius:10px;
+  background:var(--card);
+  border:1px solid var(--line);
+  color:var(--ink);
+}
+
+.menu{
+  position:sticky;
+  top:0;
+  z-index:20;             /* over flat-layets ikoner, saa menuen aldrig havner bagved */
+  background:var(--card);
+  border-block:1px solid var(--line);
+  display:flex;
+  flex-direction:column;
+}
+
+.menu-item{
+  border:none;
+  border-radius:0;
+  background:none;
+  text-align:left;
+  padding:15px 20px;
+  font-size:16px;
+  color:var(--ink);
+}
+
+.menu-item + .menu-item{border-top:1px solid var(--line)}
+.menu-item[aria-current="true"]{color:var(--accent);font-weight:600}
+
+.view-title{
+  font-family:"Instrument Serif",Georgia,serif;
+  font-weight:400;
+  font-size:24px;
+  margin:0 2px 14px;
+}
+
+.tom-besked{color:var(--ink-soft);font-size:14px;margin:0 2px}
+
+/* Mit klaedeskab: en firkantet rude pr. genstand, kategori for kategori. */
+.ward-gruppe{margin-bottom:24px}
+
+.ward-titel{
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--ink-soft);
+  margin:0 2px 8px;
+}
+
+.ward-titel span{opacity:.6;font-weight:400}
+
+.ward-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+}
+
+.ward-item{margin:0}
+
+/* Ruden er kvadratisk, saa billedet kan roteres 90 grader uden at stikke udenfor. */
+.ward-billede{
+  position:relative;
+  aspect-ratio:1;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:10px;
+  overflow:hidden;
+}
+
+.ward-billede img{
+  position:absolute;
+  top:50%;
+  left:50%;
+  width:100%;
+  height:100%;
+  padding:8px;
+  object-fit:contain;
+  transform:translate(-50%,-50%) rotate(90deg);
+}
+
+.ward-paenhed{
+  position:absolute;
+  left:5px;
+  bottom:5px;
+  font-size:10px;
+  line-height:1;
+  padding:3px 5px;
+  border-radius:999px;
+  background:var(--paper);
+  border:1px solid var(--line);
+  color:var(--ink-soft);
+}
+
+.ward-slet{
+  position:absolute;
+  top:4px;
+  right:4px;
+  width:22px;
+  height:22px;
+  padding:0;
+  font-size:14px;
+  line-height:1;
+  border-radius:50%;
+  background:var(--paper);
+  border:1px solid var(--line);
+  color:var(--ink-soft);
+}
+
+.ward-item figcaption{
+  font-size:11px;
+  line-height:1.3;
+  color:var(--ink-soft);
+  margin-top:5px;
+  padding:0 2px;
+}
 
 /* Lejlighedsmenu over flat-layet. Styrer hvor paent toejet skal vaere. */
 .occasion{
@@ -254,17 +381,6 @@ main{flex:1;padding:0 20px 20px}
   background:var(--card);
 }
 
-.favorites{margin:16px 2px 0}
-
-.favorites-label{
-  display:block;
-  font-size:11px;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-  color:var(--ink-soft);
-  margin-bottom:6px;
-}
-
 .favorites-list{display:flex;flex-wrap:wrap;gap:6px}
 
 .fav-chip{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
@@ -278,9 +394,10 @@ footer{
   z-index:10;               /* skal altid ligge oven paa lås/pil-ikonerne, aldrig omvendt */
   padding:12px 20px calc(14px + env(safe-area-inset-bottom));
   background:var(--paper);  /* helt ugennemsigtig, saa intet kan rende igennem nedefra */
-  display:flex;
-  gap:10px;
 }
+
+/* Kun den gruppe der hoerer til den aktive visning er synlig. */
+.footer-group{display:flex;gap:10px}
 
 button{
   font:inherit;

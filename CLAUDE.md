@@ -126,7 +126,32 @@ touch-lytter et sted på siden.
 
 **Favoritter:** ☆-knappen i footeren gemmer/fjerner det viste sæt i
 `localStorage` (`skabet-favorites`). Gemte sæt vises som en chip-liste
-under outfittet; tryk henter sættet frem igen (ignorerer låse).
+på "Favorit Outfits"; tryk henter sættet frem og skifter til "Vælg
+Outfit" (ignorerer låse).
+
+**Menu og visninger:** ☰-knappen i headeren åbner en menu med tre
+visninger (`visView()` i `script.js`):
+
+| Menupunkt | Sektion | Indhold |
+|-----------|---------|---------|
+| Mit klædeskab | `#view-skab` | alt tøjet i et gitter, kategori for kategori |
+| Vælg Outfit | `#view-outfit` | flat-layet, lejlighedsmenuen og meta-chips |
+| Favorit Outfits | `#view-favoritter` | gemte sæt |
+
+Det er ikke en router — alle tre sektioner ligger i `index.html`, og der
+skiftes ved at sætte `hidden` på de øvrige. Der er ingen URL pr. visning,
+og valget huskes ikke: appen starter altid på "Vælg Outfit", fordi det er
+det man skal bruge om morgenen.
+
+Footeren hører til visningen: "Vælg Outfit" har shuffle + ☆, "Mit
+klædeskab" har "+ Tilføj tøj", og "Favorit Outfits" har ingen knapper
+(hele footeren skjules). Grupperne står som `.footer-group` med et
+`data-footer`-attribut der matcher visningens navn.
+
+I klædeskabet kan kun tøj tilføjet via formularen slettes (× på ruden) —
+det hardcodede tøj står i `files` og skal fjernes der. Ruderne er
+kvadratiske, netop så billedet kan roteres 90 grader uden at stikke uden
+for sin rude.
 
 **Billedskift (crossfade):** `renderSlot()` lader gammelt og nyt billede
 ligge oveni hinanden i samme grid-celle (`grid-area:1/1` på `.garment`)
@@ -167,6 +192,10 @@ andre.
   det være fordi en af de tre er blevet uoverskuelig, ikke på forhånd.
 - CSS-variabler til farver og mål, defineret i `:root`. Ingen hardcodede
   hex-værdier længere nede i filen.
+- `[hidden]{display:none !important}` står med vilje øverst i `style.css`.
+  Uden den ville en almindelig `display:flex`-regel vinde over browserens
+  egen `[hidden]`-regel, så `el.hidden = true` ikke ville skjule noget —
+  det rammer både menuen, footer-grupperne og visningerne.
 - Kommentarer i koden er på dansk uden æ, ø og å.
 - Billeder vises med `object-fit: contain` i slots med fast højde. Det er
   det der holder layoutet stabilt når fotos har forskellige dimensioner.

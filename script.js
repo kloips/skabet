@@ -187,11 +187,15 @@ rebuildItems();
 const lay           = document.getElementById("lay");
 const meta          = document.getElementById("meta");
 const weatherEl     = document.getElementById("weather");
-const favoritesEl   = document.getElementById("favorites");
 const favoritesList = document.getElementById("favoritesList");
+const favoritesEmpty= document.getElementById("favoritesEmpty");
 const favoriteBtn   = document.getElementById("favorite");
 const addItemBtn    = document.getElementById("addItemBtn");
 const occasionEl    = document.getElementById("occasion");
+const menuBtn       = document.getElementById("menuBtn");
+const menuEl        = document.getElementById("menu");
+const footerEl      = document.getElementById("footer");
+const wardrobeEl    = document.getElementById("wardrobe");
 const addDialog     = document.getElementById("addDialog");
 const addForm       = document.getElementById("addForm");
 const addPhoto      = document.getElementById("addPhoto");
@@ -273,7 +277,7 @@ const recordKey = record => CATS.map(cat => record[cat] ?? "").join(",");
 
 function renderFavorites(){
   const favorites = loadFavorites();
-  favoritesEl.hidden = favorites.length === 0;
+  favoritesEmpty.hidden = favorites.length > 0;
   favoritesList.innerHTML = "";
   favorites.forEach(record => {
     const names = CATS.map(cat => items.find(i => i.id === record[cat])?.name).filter(Boolean).join(" · ");
@@ -452,6 +456,120 @@ function shuffle(){
   updateFavoriteButton();
 }
 
+/*---------------------------------------------------------------
+   Menu og visninger. Tre sektioner deler samme side - der skiftes
+   ved at vise en og skjule resten, ingen sideskift og ingen router.
+----------------------------------------------------------------*/
+const VIEW_NAVNE = { skab: "Mit klædeskab", outfit: "Vælg Outfit", favoritter: "Favorit Outfits" };
+let aktivView = "outfit";        // det man lander paa om morgenen
+
+function visView(navn){
+  if (!VIEW_NAVNE[navn]) return;
+  aktivView = navn;
+
+  document.querySelectorAll(".view").forEach(v => {
+    v.hidden = v.id !== "view-" + navn;
+  });
+  document.querySelectorAll(".menu-item").forEach(b => {
+    b.setAttribute("aria-current", String(b.dataset.view === navn));
+  });
+
+  // Footeren hoerer til visningen - favoritlisten har ingen knapper.
+  let harKnapper = false;
+  document.querySelectorAll(".footer-group").forEach(g => {
+    const vis = g.dataset.footer === navn;
+    g.hidden = !vis;
+    if (vis) harKnapper = true;
+  });
+  footerEl.hidden = !harKnapper;
+
+  if (navn === "skab") renderWardrobe();
+  lukMenu();
+  window.scrollTo(0, 0);
+}
+
+function lukMenu(){
+  menuEl.hidden = true;
+  menuBtn.setAttribute("aria-expanded", "false");
+}
+
+menuBtn.addEventListener("click", e => {
+  e.stopPropagation();
+  const aaben = menuEl.hidden;
+  menuEl.hidden = !aaben;
+  menuBtn.setAttribute("aria-expanded", String(aaben));
+});
+
+menuEl.addEventListener("click", e => {
+  const btn = e.target.closest(".menu-item");
+  if (btn) visView(btn.dataset.view);
+});
+
+// Tryk udenfor eller Escape lukker menuen igen.
+document.addEventListener("click", e => {
+  if (!menuEl.hidden && !menuEl.contains(e.target)) lukMenu();
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && !menuEl.hidden) lukMenu();
+});
+
+/*---------------------------------------------------------------
+   Mit klaedeskab: alt toejet, kategori for kategori.
+----------------------------------------------------------------*/
+const KAT_NAVNE = {
+  outerwear: "Jakker",
+  mid:       "Trøjer",
+  top:       "Overdele",
+  bottom:    "Bukser",
+  shorts:    "Shorts",
+  shoes:     "Sko"
+};
+
+function renderWardrobe(){
+  wardrobeEl.innerHTML = "";
+
+  Object.keys(KAT_NAVNE).forEach(kat => {
+    const iKat = items.filter(i => i.category === kat);
+    if (!iKat.length) return;
+
+    const gruppe = document.createElement("section");
+    gruppe.className = "ward-gruppe";
+    gruppe.innerHTML = `<h3 class="ward-titel">${KAT_NAVNE[kat]} <span>${iKat.length}</span></h3>`;
+
+    const grid = document.createElement("div");
+    grid.className = "ward-grid";
+
+    iKat.forEach(item => {
+      const kort = document.createElement("figure");
+      kort.className = "ward-item";
+      // Kun toej tilfoejet fra formularen kan slettes - det hardcodede staar i files-objektet.
+      const egen = typeof item.id === "string" && item.id.startsWith("x");
+      kort.innerHTML = `
+        <div class="ward-billede">
+          <img src="${item.image}" alt="${item.name}" loading="lazy">
+          <span class="ward-paenhed" title="Pænhed">${item.paenhed}</span>
+          ${egen ? `<button class="ward-slet" type="button" data-slet="${item.id}" aria-label="Slet ${item.name}">×</button>` : ""}
+        </div>
+        <figcaption>${item.name}</figcaption>`;
+      grid.append(kort);
+    });
+
+    gruppe.append(grid);
+    wardrobeEl.append(gruppe);
+  });
+}
+
+wardrobeEl.addEventListener("click", e => {
+  const btn = e.target.closest("[data-slet]");
+  if (!btn) return;
+  const id = btn.dataset.slet;
+  const item = items.find(i => String(i.id) === id);
+  if (!confirm(`Slet "${item ? item.name : "denne genstand"}"?`)) return;
+  saveExtraItems(loadExtraItems().filter(i => String(i.id) !== id));
+  rebuildItems();
+  renderWardrobe();
+});
+
 document.getElementById("shuffle").addEventListener("click", shuffle);
 
 /* Et nyt valg gemmes og giver et helt nyt saet med det samme - laaste kategorier
@@ -487,7 +605,10 @@ favoritesList.addEventListener("click", e => {
     return;
   }
   const record = loadFavorites().find(f => f.id === id);
-  if (record) loadFavorite(record);
+  if (record){
+    loadFavorite(record);
+    visView("outfit");        // saettet hentes frem der hvor man kan se det
+  }
 });
 
 lay.addEventListener("click", e => {
@@ -555,6 +676,7 @@ addForm.addEventListener("submit", async e => {
   }
 
   rebuildItems();
+  renderWardrobe();          // det nye stykke skal vaere synligt med det samme
   addForm.reset();
   addDialog.close();
 });
@@ -595,6 +717,7 @@ async function init(){
   }
   renderFavorites();
   shuffle();
+  visView("outfit");
 }
 
 init();

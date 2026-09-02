@@ -20,9 +20,25 @@
 <header>
   <h1>Skabet</h1>
   <span class="weather" id="weather">9–14° · overskyet</span>
+  <button class="menu-btn" id="menuBtn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu">☰</button>
 </header>
 
+<nav class="menu" id="menu" hidden>
+  <button class="menu-item" type="button" data-view="skab">Mit klædeskab</button>
+  <button class="menu-item" type="button" data-view="outfit">Vælg Outfit</button>
+  <button class="menu-item" type="button" data-view="favoritter">Favorit Outfits</button>
+</nav>
+
 <main>
+
+<!-- Mit klaedeskab: alt toejet, kategori for kategori. -->
+<section class="view" id="view-skab" hidden>
+  <h2 class="view-title">Mit klædeskab</h2>
+  <div id="wardrobe"></div>
+</section>
+
+<!-- Vaelg Outfit: selve flat-layet, det man lander paa om morgenen. -->
+<section class="view" id="view-outfit">
   <div class="occasion">
     <label for="occasion">Lejlighed</label>
     <select id="occasion">
@@ -68,17 +84,26 @@
     </div>
   </div>
   <div class="meta" id="meta"></div>
+</section>
 
-  <section class="favorites" id="favorites" hidden>
-    <span class="favorites-label">Favoritter</span>
-    <div class="favorites-list" id="favoritesList"></div>
-  </section>
+<!-- Favorit Outfits: gemte saet, tryk henter et frem paa Vaelg Outfit. -->
+<section class="view" id="view-favoritter" hidden>
+  <h2 class="view-title">Favorit Outfits</h2>
+  <p class="tom-besked" id="favoritesEmpty" hidden>Du har ingen gemte sæt endnu. Tryk på ☆ under et outfit for at gemme det.</p>
+  <div class="favorites-list" id="favoritesList"></div>
+</section>
+
 </main>
 
-<footer>
-  <button class="primary" id="shuffle">Giv mig et sæt</button>
-  <button class="ghost" id="favorite" type="button" aria-pressed="false" aria-label="Gem som favorit">☆</button>
-  <button class="ghost" id="addItemBtn" type="button" aria-label="Tilføj tøj">+</button>
+<footer id="footer">
+  <!-- Knapperne skifter med visningen - se visView() i script.js. -->
+  <div class="footer-group" data-footer="outfit">
+    <button class="primary" id="shuffle">Giv mig et sæt</button>
+    <button class="ghost" id="favorite" type="button" aria-pressed="false" aria-label="Gem som favorit">☆</button>
+  </div>
+  <div class="footer-group" data-footer="skab" hidden>
+    <button class="primary" id="addItemBtn" type="button">+ Tilføj tøj</button>
+  </div>
 </footer>
 
 <dialog id="addDialog">
