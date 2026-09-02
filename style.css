@@ -115,6 +115,14 @@ h1{
   color:var(--ink);
 }
 
+/* Kraftigere vejr i en del af tidsrummet, fx "torden 16-18". Skjules helt
+   naar vejret er ens hele vejen igennem. */
+.weather-detalje{
+  font-size:13px;
+  line-height:1.25;
+  color:var(--ink-soft);
+}
+
 main{flex:1;padding:0 20px 20px}
 
 /* Menu-knap i headeren, og selve menuen som en liste under den. */

@@ -114,8 +114,17 @@ Vejret beskrives med tekst-koder (`"cloudy"`, `"lightrainshowers_day"`,
 `"rainandthunder"`), ikke tal som Open-Meteos WMO-koder. `VEJR_TYPER` i
 `script.js` oversætter dem til dansk og markerer hvilke der tæller som
 regn. **Listen er sorteret efter kraftighed, kraftigst øverst** — den
-rækkefølge afgør både navnet og hvilken time der bestemmer dagens vejr,
-så flyt ikke rundt på den uden at tænke over begge dele.
+rækkefølge bruges flere steder, så flyt ikke rundt på den uden at tænke
+over alle tre:
+
+1. **Navnet** er det vejr der fylder flest timer, ikke det kraftigste.
+   Ved lige mange timer vinder det kraftigste. Det var før det kraftigste
+   alene, men så døbte to timers torden hele dagen "Torden".
+2. **Detaljelinjen** vises kun hvis der er kraftigere vejr i en del af
+   tidsrummet, og nævner det med klokkeslæt: "torden 16–18". Timetallet
+   lægges +1 til, fordi et symbol gælder timen *fra* det klokkeslæt.
+3. **Regnjakken** tvinges frem hvis bare én time i tidsrummet er våd —
+   uafhængigt af hvad beskrivelsen siger.
 
 **Lejlighed:** menuen over flat-layet vælger hvor pænt tøjet skal være.
 Hver lejlighed er et interval på `paenhed` (`OCCASIONS` i `script.js`):

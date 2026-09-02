@@ -188,6 +188,7 @@ const lay           = document.getElementById("lay");
 const meta          = document.getElementById("meta");
 const weatherTemp   = document.getElementById("weatherTemp");
 const weatherNavn   = document.getElementById("weatherNavn");
+const weatherDetalje= document.getElementById("weatherDetalje");
 const favoritesList = document.getElementById("favoritesList");
 const favoritesEmpty= document.getElementById("favoritesEmpty");
 const favoriteBtn   = document.getElementById("favorite");
@@ -264,21 +265,45 @@ async function fetchWeather(){
     const valgte = iVindue.filter(r => r.time.slice(0, 10) === foersteDag);
 
     const temps = valgte.map(r => r.data.instant.details.air_temperature);
-    // Symbolet ligger paa naeste time - er der ingen (sidste raekke), bruges seks-timers.
-    const koder = valgte
-      .map(r => r.data.next_1_hours?.summary?.symbol_code
-             || r.data.next_6_hours?.summary?.symbol_code)
-      .filter(Boolean)
-      .map(k => k.replace(/_(day|night|polartwilight)$/, ""));
 
-    const kraftigst = koder.sort((a, b) => vejrRang(a) - vejrRang(b))[0] || "";
-    const type = VEJR_TYPER.find(t => t.test(kraftigst));
+    // Symbolet ligger paa naeste time - er der ingen (sidste raekke), bruges seks-timers.
+    const timer = valgte
+      .map(r => ({
+        time: new Date(r.time).getHours(),
+        kode: (r.data.next_1_hours?.summary?.symbol_code
+            || r.data.next_6_hours?.summary?.symbol_code
+            || "").replace(/_(day|night|polartwilight)$/, "")
+      }))
+      .filter(t => t.kode)
+      .map(t => ({ ...t, rang: vejrRang(t.kode) }))
+      .filter(t => t.rang < VEJR_TYPER.length);
+
+    if (!timer.length || !temps.length) return null;
+
+    // Beskrivelsen bygger paa det vejr der fylder FLEST timer - ikke det
+    // kraftigste. Ellers kom to timers torden til at doebe hele dagen.
+    // Ved lige mange timer vinder det kraftigste (laveste rang).
+    const antal = new Map();
+    timer.forEach(t => antal.set(t.rang, (antal.get(t.rang) || 0) + 1));
+    const dominerende = [...antal.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0] - b[0])[0][0];
+
+    // Er der kraftigere vejr i en del af tidsrummet, naevnes det med klokkeslaet.
+    const kraftigst = Math.min(...timer.map(t => t.rang));
+    let detalje = "";
+    if (kraftigst < dominerende){
+      const naar = timer.filter(t => t.rang === kraftigst).map(t => t.time);
+      // +1 fordi et symbol gaelder timen FRA det klokkeslaet.
+      detalje = `${VEJR_TYPER[kraftigst].navn} ${Math.min(...naar)}–${Math.max(...naar) + 1}`;
+    }
 
     return {
       min: Math.min(...temps),
       max: Math.max(...temps),
-      navn: type ? type.navn : "ukendt vejr",
-      regn: type ? type.regn : false
+      navn: VEJR_TYPER[dominerende].navn,
+      detalje,
+      // Regnjakken skal frem hvis bare en del af tidsrummet er vaadt.
+      regn: timer.some(t => VEJR_TYPER[t.rang].regn)
     };
   } catch {
     return null;                  // ingen forbindelse, brug fallback-temperaturen
@@ -786,6 +811,8 @@ async function init(){
     // Temperaturen oeverst, vejrtypen under - navnene staar med lille begyndelsesbogstav.
     weatherTemp.textContent = `${Math.round(w.min)}–${Math.round(w.max)}°`;
     weatherNavn.textContent = w.navn.charAt(0).toUpperCase() + w.navn.slice(1);
+    weatherDetalje.textContent = w.detalje;
+    weatherDetalje.hidden = !w.detalje;   // ingen linje naar vejret er ens hele tidsrummet
   }
   renderFavorites();
   shuffle();
