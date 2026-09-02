@@ -452,7 +452,6 @@ lay.addEventListener("click", e => {
     return;
   }
 
-  if (btn.dataset.action === "prev"){ bump(btn); cycleSlot(slot); }
   if (btn.dataset.action === "next"){ bump(btn); cycleSlot(slot); }
 });
 
