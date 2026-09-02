@@ -882,6 +882,7 @@ woreBtn.addEventListener("click", () => {
    ikke saerskilt: saettet hentes frem som det saa ud, ligesom en favorit. */
 undoBtn.addEventListener("click", () => {
   if (!forrigeSaet) return;
+  bump(undoBtn);                 // tegnet drejer en gang mod uret
   const viste = current;
   current = forrigeSaet;
   forrigeSaet = viste;
@@ -933,15 +934,35 @@ lay.addEventListener("click", e => {
    Forstoerret toejbillede. Kilde og navn tages fra det billede der
    blev trykket paa, saa der ikke skal slaas op i items igen.
 ----------------------------------------------------------------*/
+/* Samme moenster som menuen og vaelgeren: klasser styrer bevaegelsen, og en
+   timer skjuler laget bagefter. Ikke "animationend" - den udloeses aldrig hvis
+   brugeren har slaaet animationer fra, og laget ville saa aldrig forsvinde. */
+const ZOOM_LUK_MS = 180;   /* skal matche varigheden paa zoom-ud i style.css */
+let zoomAaben = false;
+let zoomTimer = null;
+
 function visStort(billede){
+  clearTimeout(zoomTimer);
+  zoomAaben = true;
   zoomBillede.src = billede.src;
   zoomBillede.alt = billede.alt;
   zoomNavn.textContent = billede.alt;
+  zoomEl.classList.remove("lukker");
   zoomEl.hidden = false;
+  void zoomEl.offsetWidth;          // tving reflow, saa animationen starter forfra
+  zoomEl.classList.add("aaben");
 }
 
 function lukStort(){
-  zoomEl.hidden = true;
+  if (!zoomAaben) return;
+  clearTimeout(zoomTimer);
+  zoomAaben = false;
+  zoomEl.classList.remove("aaben");
+  zoomEl.classList.add("lukker");
+  zoomTimer = setTimeout(() => {
+    zoomEl.hidden = true;
+    zoomEl.classList.remove("lukker");
+  }, ZOOM_LUK_MS);
 }
 
 zoomEl.addEventListener("click", lukStort);   // tryk hvor som helst paa laget

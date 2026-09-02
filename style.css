@@ -25,18 +25,18 @@
 
   /* Laase-ikon: stoerrelse og lodret nudge. Ikonerne er centreret i deres zone,
      saa y-vaerdierne er 0 - de er der stadig hvis en kategori skal justeres. */
-  --lock-jacket:36px;   --lock-y-jacket:0px;
-  --lock-mid:36px;      --lock-y-mid:0px;
-  --lock-top:36px;      --lock-y-top:0px;
-  --lock-bottom:36px;   --lock-y-bottom:0px;
-  --lock-shoes:36px;    --lock-y-shoes:0px;
+  --lock-jacket:42px;   --lock-y-jacket:0px;
+  --lock-mid:42px;      --lock-y-mid:0px;
+  --lock-top:42px;      --lock-y-top:0px;
+  --lock-bottom:42px;   --lock-y-bottom:0px;
+  --lock-shoes:42px;    --lock-y-shoes:0px;
 
   /* Pil-ikon: stoerrelse og lodret nudge, uafhaengigt af laase-ikonet. */
-  --arrow-jacket:36px;  --arrow-y-jacket:0px;
-  --arrow-mid:36px;     --arrow-y-mid:0px;
-  --arrow-top:36px;     --arrow-y-top:0px;
-  --arrow-bottom:36px;  --arrow-y-bottom:0px;
-  --arrow-shoes:36px;   --arrow-y-shoes:0px;
+  --arrow-jacket:42px;  --arrow-y-jacket:0px;
+  --arrow-mid:42px;     --arrow-y-mid:0px;
+  --arrow-top:42px;     --arrow-y-top:0px;
+  --arrow-bottom:42px;  --arrow-y-bottom:0px;
+  --arrow-shoes:42px;   --arrow-y-shoes:0px;
   --radius:14px;
   /* Skrifttype til lejlighed og vejr - den bloede slab-serif. */
   --font-label:"Bitter",Georgia,"Times New Roman",serif;
@@ -599,6 +599,18 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
    telefoner. Skaerer du mere, bliver knapperne under 40px brede at ramme. */
 .ghost{background:var(--card);border-color:var(--line);color:var(--ink);padding-inline:12px}
 .ghost:disabled{opacity:.35;cursor:default}
+
+/* Fortryd-knappen: kun selve tegnet drejer, ikke hele knappen. Mod uret,
+   samme vej som pilen i tegnet peger. Trigges fra JS med bump(), praecis
+   som pil-knapperne i flat-layet - :active er ikke paalideligt paa iOS. */
+.undo-ikon{display:inline-block}
+
+@keyframes fortryd-drej{
+  0%   {transform:rotate(0deg)}
+  100% {transform:rotate(-360deg)}
+}
+
+#undoBtn.bump .undo-ikon{animation:fortryd-drej .5s cubic-bezier(.22,.61,.36,1)}
 .ghost[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
 
 /* Forstoerret toejbillede. Ligger over alt andet - footeren er 10, menuen 20. */
@@ -624,6 +636,29 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   object-fit:contain;          /* aldrig cover - toejet maa ikke beskaeres */
   transform:translate(-50%,-50%) rotate(90deg);
 }
+
+/* Baggrunden toner ind, og billedet vokser en anelse med - saa foles det som
+   en forstoerrelse frem for et sideskift. Samme transform-funktioner i samme
+   raekkefoelge som i grundreglen herover; ellers falder browseren tilbage paa
+   matrix-interpolation og bevaegelsen bliver grim. */
+@keyframes zoom-ind{
+  0%   {opacity:0}
+  100% {opacity:1}
+}
+
+@keyframes zoom-ud{
+  0%   {opacity:1}
+  100% {opacity:0}
+}
+
+@keyframes zoom-billede-ind{
+  0%   {transform:translate(-50%,-50%) rotate(90deg) scale(.88)}
+  100% {transform:translate(-50%,-50%) rotate(90deg) scale(1)}
+}
+
+.zoom.aaben{animation:zoom-ind .22s ease both}
+.zoom.lukker{animation:zoom-ud .18s ease-in both}   /* varigheden matcher ZOOM_LUK_MS i script.js */
+.zoom.aaben .zoom-billede{animation:zoom-billede-ind .3s cubic-bezier(.22,.61,.36,1) both}
 
 .zoom-navn{
   position:absolute;
@@ -681,6 +716,9 @@ dialog h2{
   .mi-streg,.mi-loekke,.vaelger-pil{transition:none}
   .vaelger-liste.aaben,.vaelger-liste.lukker{animation:none}
   .vaelger-liste.lukker{opacity:0}
+  .zoom.aaben,.zoom.lukker,.zoom.aaben .zoom-billede,
+  #undoBtn.bump .undo-ikon{animation:none}
+  .zoom.lukker{opacity:0}
 }
 
 @media (min-width:520px){
