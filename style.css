@@ -240,16 +240,110 @@ main{flex:1;padding:0 20px 20px}
 /* Mit klaedeskab: en firkantet rude pr. genstand, kategori for kategori. */
 .ward-gruppe{margin-bottom:24px}
 
-.ward-titel{
+.ward-titel{margin:0 2px 8px}
+
+/* Overskriften er klikbar, men holder samme udseende som foer - kun
+   chevronen yderst til hoejre roeber at den foerer et sted hen. */
+.ward-titel-knap{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  width:100%;
+  padding:6px 0;
+  border:none;
+  border-radius:0;
+  background:none;
+  font:inherit;
   font-size:11px;
   font-weight:600;
   letter-spacing:.08em;
   text-transform:uppercase;
   color:var(--ink-soft);
+  text-align:left;
+}
+
+.ward-titel-knap .antal{opacity:.6;font-weight:400}
+.ward-titel-knap .pil{margin-left:auto;font-size:15px;opacity:.55;letter-spacing:0}
+
+.skab-tilbage{
+  display:block;
+  margin:0 2px 10px;
+  padding:0;
+  border:none;
+  border-radius:0;
+  background:none;
+  font-family:var(--font-label);
+  font-size:13px;
+  font-weight:400;
+  color:var(--ink-soft);
+}
+
+/* Vandret raekke med scroll-snap. Ingen JS - browseren klarer det selv.
+   Bredden er en broekdel af den synlige plads, ikke et pixeltal: 6,5 genstand
+   ad gangen betyder at den syvende altid er halvt synlig som signal om at der
+   er mere, uanset skaermbredde. */
+.ward-raekke{
+  display:flex;
+  gap:6px;
+  overflow-x:auto;
+  scroll-snap-type:x proximity;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  padding-bottom:4px;
+}
+
+.ward-raekke::-webkit-scrollbar{display:none}
+
+.ward-raekke .ward-item{
+  flex:0 0 calc((100% - 6 * 6px) / 6.5);   /* 6 mellemrum a 6px, jf. gap herover */
+  min-width:0;      /* uden denne presser lange ord i navnet ruden bredere end sin flex-basis */
+  scroll-snap-align:start;
+}
+
+/* Navnet skaeres til to linjer - ruderne er smalle i den vandrette raekke. */
+.ward-raekke figcaption{
+  font-size:10px;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+
+/* Filtre paa kategori-siden. Nulstilles hver gang man gaar ind. */
+.filtre{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:6px;
   margin:0 2px 8px;
 }
 
-.ward-titel span{opacity:.6;font-weight:400}
+.filter-label{
+  font-family:var(--font-label);
+  font-size:13px;
+  color:var(--ink-soft);
+  margin-right:2px;
+}
+
+.filter-chip{
+  font-family:var(--font-label);
+  font-size:13px;
+  line-height:1.25;
+  padding:6px 12px;
+  border-radius:999px;
+  background:var(--card);
+  border:1px solid var(--line);
+  color:var(--ink-soft);
+}
+
+.filter-chip[aria-pressed="true"]{
+  background:var(--accent);
+  border-color:var(--accent);
+  color:#fff;
+}
+
+.skab-indhold{margin-top:12px}
 
 .ward-grid{
   display:grid;

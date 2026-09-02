@@ -204,6 +204,8 @@ const menuBtn       = document.getElementById("menuBtn");
 const menuEl        = document.getElementById("menu");
 const footerEl      = document.getElementById("footer");
 const wardrobeEl    = document.getElementById("wardrobe");
+const skabTitel     = document.getElementById("skabTitel");
+const skabTilbage   = document.getElementById("skabTilbage");
 const addDialog     = document.getElementById("addDialog");
 const addForm       = document.getElementById("addForm");
 const addPhoto      = document.getElementById("addPhoto");
@@ -660,7 +662,12 @@ function visView(navn){
   });
   footerEl.hidden = !harKnapper;
 
-  if (navn === "skab") renderWardrobe();
+  // Man lander altid paa oversigten, aldrig paa den kategori man saa sidst.
+  if (navn === "skab"){
+    skabKategori = null;
+    nulstilFiltre();
+    renderWardrobe();
+  }
   lukMenu();
   window.scrollTo(0, 0);
 }
@@ -727,49 +734,177 @@ const KAT_NAVNE = {
   shoes:     "Sko"
 };
 
+/* Klaedeskabet har to tilstande i samme sektion: en oversigt med en vandret
+   raekke pr. kategori, og en side for en enkelt kategori. Det er bevidst ikke
+   et fjerde punkt i menuen - visView() styrer tre faste visninger. */
+let skabKategori = null;        // null = oversigt, ellers kategorinoeglen
+let skabFilter   = null;
+
+function nulstilFiltre(){
+  skabFilter = { paenhed: "alle", regn: false, aldrig: false };
+}
+nulstilFiltre();
+
+/* Hvor mange gange hvert item-id staar i skabet-log. Bygges EN gang pr.
+   rendering, saa der ikke slaas op i loggen for hver enkelt genstand.
+   Er loggen tom eller vaek, er alle tal 0 og alt virker som foer.
+   Bruges KUN til at sortere og filtrere her - karantaenen i pick() laeser
+   den samme log for sig selv. */
+function baaretAntal(){
+  const antal = new Map();
+  loadLog().forEach(post => {
+    (post.ids || []).forEach(id => {
+      if (id === "" || id == null) return;
+      antal.set(id, (antal.get(id) || 0) + 1);
+    });
+  });
+  return antal;
+}
+
+/* Flest gange baaret foerst. Array.sort er stabil, saa genstande med lige
+   mange gange beholder deres raekkefoelge fra items, og nul gange havner
+   naturligt til sidst. */
+function sorterEfterBrug(liste, antal){
+  return [...liste].sort((a, b) => (antal.get(b.id) || 0) - (antal.get(a.id) || 0));
+}
+
+/* detaljer=true giver paenhed-badge og slet-knap. De vises kun paa
+   kategori-siden - i den vandrette oversigt ville de blive ramt ved et
+   uheld mens man scroller. */
+function lavKort(item, detaljer){
+  const kort = document.createElement("figure");
+  kort.className = "ward-item";
+  // Kun toej tilfoejet fra formularen kan slettes - det hardcodede staar i files-objektet.
+  const egen = typeof item.id === "string" && item.id.startsWith("x");
+  kort.innerHTML = `
+    <div class="ward-billede">
+      <img src="${item.image}" alt="${item.name}" loading="lazy">
+      ${detaljer ? `<span class="ward-paenhed" title="Pænhed">${item.paenhed}</span>` : ""}
+      ${detaljer && egen ? `<button class="ward-slet" type="button" data-slet="${item.id}" aria-label="Slet ${item.name}">×</button>` : ""}
+    </div>
+    <figcaption>${item.name}</figcaption>`;
+  return kort;
+}
+
 function renderWardrobe(){
+  if (skabKategori) renderKategori(); else renderOversigt();
+}
+
+function renderOversigt(){
+  skabTitel.textContent = "Mit klædeskab";
+  skabTilbage.hidden = true;
   wardrobeEl.innerHTML = "";
 
+  const antal = baaretAntal();
   Object.keys(KAT_NAVNE).forEach(kat => {
-    const iKat = items.filter(i => i.category === kat);
-    if (!iKat.length) return;
+    const iKat = sorterEfterBrug(items.filter(i => i.category === kat), antal);
+    if (!iKat.length) return;     // tomme kategorier springes over
 
     const gruppe = document.createElement("section");
     gruppe.className = "ward-gruppe";
-    gruppe.innerHTML = `<h3 class="ward-titel">${KAT_NAVNE[kat]} <span>${iKat.length}</span></h3>`;
+    gruppe.innerHTML = `
+      <h3 class="ward-titel">
+        <button class="ward-titel-knap" type="button" data-kat="${kat}">
+          ${KAT_NAVNE[kat]} <span class="antal">${iKat.length}</span>
+          <span class="pil" aria-hidden="true">›</span>
+        </button>
+      </h3>`;
 
-    const grid = document.createElement("div");
-    grid.className = "ward-grid";
-
-    iKat.forEach(item => {
-      const kort = document.createElement("figure");
-      kort.className = "ward-item";
-      // Kun toej tilfoejet fra formularen kan slettes - det hardcodede staar i files-objektet.
-      const egen = typeof item.id === "string" && item.id.startsWith("x");
-      kort.innerHTML = `
-        <div class="ward-billede">
-          <img src="${item.image}" alt="${item.name}" loading="lazy">
-          <span class="ward-paenhed" title="Pænhed">${item.paenhed}</span>
-          ${egen ? `<button class="ward-slet" type="button" data-slet="${item.id}" aria-label="Slet ${item.name}">×</button>` : ""}
-        </div>
-        <figcaption>${item.name}</figcaption>`;
-      grid.append(kort);
-    });
-
-    gruppe.append(grid);
+    const raekke = document.createElement("div");
+    raekke.className = "ward-raekke";
+    iKat.forEach(item => raekke.append(lavKort(item, false)));
+    gruppe.append(raekke);
     wardrobeEl.append(gruppe);
   });
 }
 
+function renderKategori(){
+  skabTitel.textContent = KAT_NAVNE[skabKategori];
+  skabTilbage.hidden = false;
+  wardrobeEl.innerHTML = "";
+
+  const paenhedChips = ["alle", "1", "2", "3", "4", "5"].map(v =>
+    `<button class="filter-chip" type="button" data-paenhed="${v}" aria-pressed="${skabFilter.paenhed === v}">${v === "alle" ? "Alle" : v}</button>`
+  ).join("");
+
+  wardrobeEl.innerHTML = `
+    <div class="filtre">
+      <span class="filter-label">Pænhed</span>
+      ${paenhedChips}
+    </div>
+    <div class="filtre">
+      <button class="filter-chip" type="button" data-flag="regn" aria-pressed="${skabFilter.regn}">Egnet til regn</button>
+      <button class="filter-chip" type="button" data-flag="aldrig" aria-pressed="${skabFilter.aldrig}">Aldrig båret</button>
+    </div>
+    <div class="skab-indhold"></div>`;
+
+  renderKategoriIndhold();
+}
+
+/* Kun gitteret tegnes om naar et filter skifter - filterraekken bliver staaende. */
+function renderKategoriIndhold(){
+  const holder = wardrobeEl.querySelector(".skab-indhold");
+  const antal  = baaretAntal();
+  let liste = sorterEfterBrug(items.filter(i => i.category === skabKategori), antal);
+
+  if (skabFilter.paenhed !== "alle") liste = liste.filter(i => String(i.paenhed) === skabFilter.paenhed);
+  if (skabFilter.regn)   liste = liste.filter(i => i.regn);
+  if (skabFilter.aldrig) liste = liste.filter(i => !antal.get(i.id));
+
+  holder.innerHTML = "";
+  if (!liste.length){
+    const besked = document.createElement("p");
+    besked.className = "tom-besked";
+    besked.textContent = "Ingen genstande matcher filtrene.";
+    holder.append(besked);
+    return;
+  }
+
+  const grid = document.createElement("div");
+  grid.className = "ward-grid";
+  liste.forEach(item => grid.append(lavKort(item, true)));
+  holder.append(grid);
+}
+
 wardrobeEl.addEventListener("click", e => {
-  const btn = e.target.closest("[data-slet]");
-  if (!btn) return;
-  const id = btn.dataset.slet;
-  const item = items.find(i => String(i.id) === id);
-  if (!confirm(`Slet "${item ? item.name : "denne genstand"}"?`)) return;
-  saveExtraItems(loadExtraItems().filter(i => String(i.id) !== id));
-  rebuildItems();
+  const titel = e.target.closest(".ward-titel-knap");
+  if (titel){
+    skabKategori = titel.dataset.kat;
+    nulstilFiltre();
+    renderWardrobe();
+    window.scrollTo(0, 0);
+    return;
+  }
+
+  const chip = e.target.closest(".filter-chip");
+  if (chip){
+    if (chip.dataset.paenhed) skabFilter.paenhed = chip.dataset.paenhed;
+    else skabFilter[chip.dataset.flag] = !skabFilter[chip.dataset.flag];
+    wardrobeEl.querySelectorAll(".filter-chip").forEach(c => {
+      c.setAttribute("aria-pressed", String(
+        c.dataset.paenhed ? skabFilter.paenhed === c.dataset.paenhed : skabFilter[c.dataset.flag]
+      ));
+    });
+    renderKategoriIndhold();
+    return;
+  }
+
+  const slet = e.target.closest("[data-slet]");
+  if (slet){
+    const id = slet.dataset.slet;
+    const item = items.find(i => String(i.id) === id);
+    if (!confirm(`Slet "${item ? item.name : "denne genstand"}"?`)) return;
+    saveExtraItems(loadExtraItems().filter(i => String(i.id) !== id));
+    rebuildItems();
+    renderWardrobe();
+  }
+});
+
+skabTilbage.addEventListener("click", () => {
+  skabKategori = null;
+  nulstilFiltre();
   renderWardrobe();
+  window.scrollTo(0, 0);
 });
 
 document.getElementById("shuffle").addEventListener("click", shuffle);

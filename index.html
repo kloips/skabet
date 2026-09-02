@@ -16,7 +16,7 @@
 <!-- ?v= tvinger Safari til at hente filen paa ny. Bump datoen naar du aendrer
      style.css eller script.js - ellers kan telefonen sidde fast paa en gammel
      udgave, selvom den nye er pushet. -->
-<link rel="stylesheet" href="style.css?v=20260902r">
+<link rel="stylesheet" href="style.css?v=20260902s">
 </head>
 <body>
 
@@ -44,7 +44,10 @@
 
 <!-- Mit klaedeskab: alt toejet, kategori for kategori. -->
 <section class="view" id="view-skab" hidden>
-  <h2 class="view-title">Mit klædeskab</h2>
+  <!-- To tilstande i samme sektion: oversigt og kategori-side. Tilbage-knappen
+       vises kun paa kategori-siden - det er IKKE et fjerde menupunkt. -->
+  <button class="skab-tilbage" id="skabTilbage" type="button" hidden>← Alle kategorier</button>
+  <h2 class="view-title" id="skabTitel">Mit klædeskab</h2>
   <div id="wardrobe"></div>
 </section>
 
@@ -165,6 +168,6 @@
   </form>
 </dialog>
 
-<script src="script.js?v=20260902r" defer></script>
+<script src="script.js?v=20260902s" defer></script>
 </body>
 </html>
