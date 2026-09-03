@@ -921,7 +921,13 @@ wardrobeEl.addEventListener("click", e => {
     saveExtraItems(loadExtraItems().filter(i => String(i.id) !== id));
     rebuildItems();
     renderWardrobe();
+    return;
   }
+
+  // Tryk paa et toejbillede forstoerrer det. Skal staa EFTER slet-knappen,
+  // som ligger inde i selve ruden.
+  const billede = e.target.closest(".ward-billede img");
+  if (billede) visStort(billede);
 });
 
 skabTilbage.addEventListener("click", () => {
@@ -1067,7 +1073,12 @@ favoritesList.addEventListener("click", e => {
     // Der er ingen fortryd her, og et fejltryk under bladring er let at lave.
     if (!confirm("Fjern dette sæt fra favoritterne?")) return;
     removeFavorite(Number(slet.dataset.sletFav), Number(slet.dataset.indeks));
+    return;
   }
+
+  // Tryk paa et toejbillede forstoerrer det, praecis som i flat-layet.
+  const billede = e.target.closest(".fav-billede");
+  if (billede) visStort(billede);
 });
 
 lay.addEventListener("click", e => {
