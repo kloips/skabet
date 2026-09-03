@@ -57,7 +57,9 @@ opstart (`rebuildItems()`):
    ```
    Filnavnet før første bindestreg er kategorien. Værdien må være enten ren
    tekst (kun navnet) eller et objekt med flere oplysninger:
-   - `navn` — vises i favorit- og meta-chips.
+   - `navn` — vises i meta-chippene under flat-layet, under hver rude i
+     klædeskabet, og i forstørrelsen. **Ikke** på favoritsiden, som kun
+     viser billeder.
    - `paenhed` — 1 (mest afslappet) til 5 (pusset op). Bruges af
      lejlighedsmenuen. Mangler den, bruges `STANDARD_PAENHED` (3).
    - `regn` — `true` markerer en regnjakke, se "Sådan virker logikken".
@@ -81,8 +83,32 @@ se "Sådan virker logikken" for hvordan den bruges.
 
 Kategorinavnene er hardcodet flere steder: i `data-cat` på hvert `.slot`
 (`index.html`), i `CATS`-arrayet (`script.js`), i `grid-template-areas` i
-`.lay` (`style.css`), og i kategori-selecten i tilføj-formularen
-(`index.html`). Ændrer du et af dem, skal alle steder rettes.
+`.lay` (`style.css`), i `KAT_NAVNE` (klædeskabets overskrifter), i
+`FAV_SLOTS` (favoritvisningens rækkefølge) og i kategori-selecten i
+tilføj-formularen (`index.html`). Ændrer du et af dem, skal alle steder
+rettes.
+
+`CATS` og `FAV_SLOTS` er bevidst ikke det samme array: `CATS` indeholder
+`shorts`, fordi den er en rigtig kategori på tøjet, mens `FAV_SLOTS` er de
+fem slots der findes i layoutet. Et par shorts gemmes under nøglen `bottom`.
+
+### Hvad der ligger i localStorage
+
+Fem nøgler, alle på den enkelte enhed. Der er ingen synkronisering — sletter
+du webstedsdata i Safari, er alt herunder væk.
+
+| Nøgle | Indhold | Fyldes af |
+|-------|---------|-----------|
+| `skabet-extra-items` | tøj tilføjet via "+"-formularen, inkl. billedet som data-URL | tilføj-formularen |
+| `skabet-history` | **ét** objekt: `{ date, outerwear, mid, top, bottom, shoes }` — det appen sidst **foreslog** | hver shuffle, hvert piletryk, hver favorit der hentes frem |
+| `skabet-log` | array af `{ date, ids: [...] }`, ét sæt pr. dag, trimmet til 90 dage — det jeg **faktisk gik i** | udelukkende ✓-knappen |
+| `skabet-favorites` | array af `{ id, outerwear, mid, top, bottom, shoes }` | ☆-knappen |
+| `skabet-lejlighed` | nøglen på den valgte lejlighed, fx `"skole"` | lejlighedsvælgeren |
+
+`skabet-history` og `skabet-log` ligner hinanden, men er to forskellige ting
+og skal blive ved med at være det. Historikken er hvad appen **gættede**, og
+den overskrives konstant; loggen er hvad jeg **bekræftede**, og den udfyldes
+kun når jeg trykker ✓. Bland dem ikke sammen.
 
 ## Sådan virker logikken
 
@@ -120,13 +146,45 @@ over alle tre:
 1. **Navnet** er det vejr der fylder flest timer, ikke det kraftigste.
    Ved lige mange timer vinder det kraftigste. Det var før det kraftigste
    alene, men så døbte to timers torden hele dagen "Torden".
-2. **Regnjakken** tvinges frem hvis bare én time i tidsrummet er våd —
-   uafhængigt af hvad beskrivelsen siger. De to ting er med vilje ikke
-   koblet: beskrivelsen fortæller hvad dagen mest er, jakken skal dække
-   det værste der kan ske.
+2. **Regnjakken** kræver **to** ting samtidig: mindst én time med et symbol
+   som `VEJR_TYPER` markerer som regn, **og** at den samlede nedbør i
+   tidsrummet er mindst `REGN_MM` (0,5 mm). Et regnsymbol alene er ikke nok —
+   yr.no sætter også "lightrain" på en time med 0,1 mm, som man dårligt
+   mærker. Nedbøren tælles kun fra `next_1_hours.details.precipitation_amount`,
+   aldrig fra `next_6_hours`, som ville trække nedbør uden for tidsrummet med.
+   Feltet mangler på den sidste række og kan mangle sporadisk; de rækker
+   springes over.
+
+**Navnet og regnjakken er med vilje ikke koblet.** Der kan stå "Regn" i
+headeren uden at regnjakken tvinges frem, hvis der kun falder 0,3 mm. Det
+er ikke en fejl: beskrivelsen fortæller hvad dagen mest er, jakken handler
+om hvorvidt man bliver våd. Hold dem adskilt.
 
 Der har været forsøgt en tredje linje med "torden 16–18". Den er fjernet
 igen — den beskrev reelt det samme to gange.
+
+**Vejret hentes EFTER sættet er vist.** `init()` bygger og viser sættet med
+det samme på fallback-temperaturen (14 grader, `regnvejr` = false), og henter
+først vejret bagefter. Før ventede layoutet på hentningen og stod tomt i op
+mod et sekund.
+
+Prisen er at to ting kan være valgt på et forkert grundlag når vejret lander.
+`retEfterVejr()` retter **kun** dem, og kun hvis de beviseligt er forkerte:
+
+- **Regn.** Er det regnvejr, og er den valgte jakke ikke tagget `regn: true`,
+  trækkes en ny. Byttes kun hvis der faktisk kom en regnjakke ud af det.
+- **Shorts.** Har temperaturen krydset 22-graders-grænsen den anden vej end
+  fallback-værdien, trækkes et nyt stykke til `bottom`.
+
+Der bruges `renderSlot()` på de enkelte slots, ikke `render()` på hele sættet
+— så krydsblender det ene billede i stedet for at hele layoutet hopper. Er
+der intet at rette, røres skærmen ikke. Fejler hentningen, sker der ingenting.
+
+`foersteSaet`-flaget hænger sammen med det: `shuffle()` sætter det til `false`
+med det samme, så `retEfterVejr()` sætter det midlertidigt til `true` mens den
+trækker regnjakken, og tilbage til `false` bagefter. Dermed tæller rettelsen
+som dagens første sæt, og et efterfølgende tryk på "Giv mig et sæt" har alle
+jakker i spil igen.
 
 **Lejlighed:** menuen over flat-layet vælger hvor pænt tøjet skal være.
 Hver lejlighed er et interval på `paenhed` (`OCCASIONS` i `script.js`):
@@ -141,9 +199,62 @@ inden for intervallet, vælges det der ligger **tættest på** i stedet for at
 et slot kan aldrig ende tomt. Tilføjer du tøj i den høje ende, retter det
 sig selv.
 
-**Undgå gentagelser:** `buildOutfit()` sammenligner med gårsdagens sæt
-(gemt i `localStorage` under `skabet-history`) og undgår at vælge samme
-stykke to dage i træk, hvis kategorien har et alternativ.
+**Undgå gentagelser (gårsdagen):** `buildOutfit()` sammenligner med
+`skabet-history` og undgår at vælge samme stykke som i går, hvis kategorien
+har et alternativ. Vær opmærksom på at reglen kun gælder **dagens første
+sæt**: betingelsen er `history.date !== today`, og `saveHistory()` skriver
+dagens dato ved hver shuffle. Efter det første tryk er `isNewDay` falsk, og
+resten af dagens shuffles tager ikke hensyn til i går.
+
+**Karantæne (nyligt båret):** en anden og strengere regel oven i den. Har
+jeg trykket ✓ på et sæt, holdes de stykker ude af puljen i et antal dage per
+kategori (`KARANTAENE` i `script.js`):
+
+| Kategori | Dage |
+|----------|------|
+| `top` | 7 |
+| `mid` | 4 |
+| `bottom` / `shorts` | 3 |
+| `shoes` | 2 |
+| `outerwear` | 0 (ingen pause) |
+
+Tallet er antal dage **inklusive den dag jeg trykkede ✓** — sko båret mandag
+er i spil igen onsdag. Vinduet regnes forfra hver gang `pick()` kaldes, ud fra
+enhedens ur; der kører ingen timer i baggrunden. Datoerne sammenlignes som
+tekst, hvilket virker fordi `YYYY-MM-DD` sorterer alfabetisk i samme
+rækkefølge som kronologisk.
+
+`filtrerPaaKarantaene()` er **blød** på præcis samme måde som
+`filtrerPaaLejlighed()`: tømmer filtret puljen, springes karantænen over.
+Et slot må aldrig ende tomt. Er `skabet-log` tom — altså har jeg aldrig
+trykket ✓ — returnerer den puljen uændret, og appen opfører sig som før
+karantænen fandtes.
+
+Rækkefølgen i `pick()` er **regnjakke → lejlighed → karantæne**, og den
+rækkefølge er ikke tilfældig: regnjakken vælges først, så man aldrig står
+uden i regnvejr, uanset hvad de to andre filtre ville have sagt.
+
+**`cycleSlot()` (pilene) springer karantænen over.** Den bruger kun
+`filtrerPaaLejlighed()`. Det er bevidst: trykker jeg selv på pilen, vil jeg
+se alt hvad der findes, ikke have appen til at gemme noget for mig.
+
+**"Det tog jeg på i dag" (✓):** knappen i footeren skriver det viste sæt til
+`skabet-log` med dagens dato. Der er plads til ét sæt pr. dag — er der
+allerede logget et andet, overskrives det. Tryk igen med samme sæt fremme
+fortryder registreringen. Tilstanden vises alene via `aria-pressed`, som
+`.ghost[aria-pressed="true"]` farver grøn.
+
+**Fortryd (↺):** ét skridt tilbage til sættet før seneste hele shuffle.
+Knappen vipper frem og tilbage mellem de to seneste sæt. `forrigeSaet` lever
+kun i hukommelsen og forsvinder ved genindlæsning — det er med vilje, der er
+ingen historik-stak og ingenting gemt i `localStorage`. Knappen er `disabled`
+indtil der er noget at gå tilbage til, og `disabled` står også i markup'et,
+fordi `init()` er asynkron og JS ikke har rørt knappen i det øjeblik siden
+vises.
+
+Hverken pilene eller det at hente en favorit tæller som et skridt — kun
+`shuffle()` gemmer et forrige sæt. Ændringer lavet med pilene følger med når
+man vipper.
 
 **Lås:** hvert slot har et låse-ikon (øverst til højre). Tryk toggler
 kategorien i `lockedCats` (et `Set` i JS) — låste kategorier beholder
@@ -162,18 +273,60 @@ ved klik — `:active` i CSS er ikke pålideligt nok på iOS Safari uden en
 touch-lytter et sted på siden.
 
 **Favoritter:** ☆-knappen i footeren gemmer/fjerner det viste sæt i
-`localStorage` (`skabet-favorites`). Gemte sæt vises som en chip-liste
-på "Favorit Outfits"; tryk henter sættet frem og skifter til "Vælg
-Outfit" (ignorerer låse).
+`skabet-favorites`. Formatet er `{ id, outerwear, mid, top, bottom, shoes }`
+og er aldrig blevet ændret — gamle gemte sæt virker uden migrering.
+
+"Favorit Outfits" viser **ét sæt ad gangen i fuld bredde**, med de fem
+stykker stablet lodret som billeder. Man bladrer vandret. Det var før en
+liste af chips med fem navne adskilt af prikker, hvilket var ulæseligt.
+Navnene vises ikke længere — billederne er hele pointen.
+
+- Bladringen er ren CSS: `scroll-snap-type: x mandatory` på `.fav-baand` og
+  `scroll-snap-align: start` + `scroll-snap-stop: always` på hver `.fav-side`.
+  `scroll-snap-stop` er det der gør at et hurtigt swipe kun flytter én side.
+- Positionsviseren ("3 af 7") står **på hver side** i stedet for at blive
+  opdateret fra en scroll-lytter. Så er der ingen lytter der skal holdes ved lige.
+- Hver side har "Hent frem" (gør præcis det `loadFavorite()` gør, inkl. skift
+  til "Vælg Outfit" og at ignorere låse) og "Fjern" med `confirm()` først —
+  der er ingen fortryd her, og et fejltryk under bladring er let at lave.
+- Efter en fjernelse sættes `scrollLeft` så man bliver stående samme sted i
+  båndet, ikke hopper tilbage til den første.
+
+**Manglende tøj i en gammel favorit:** et gemt id kan pege på tøj der ikke
+findes mere, fordi det er fjernet fra `files` eller slettet fra det
+selvtilføjede. Pladsen vises som et stiplet tomt felt, og sættet får linjen
+"Et stykke i dette sæt findes ikke længere". Sættet kan **stadig** hentes
+frem; de øvrige stykker kommer med. Tidligere forsvandt stykket lydløst ud
+af navnestriben, hvilket var værre.
+
+Favoritvisningen genbruger **ikke** `.lay`, `.slot` eller klassen `garment` —
+den har sit eget navnerum (`.fav-baand`, `.fav-side`, `.fav-stak`,
+`.fav-plads`, `.fav-billede`). Men den genbruger `--h-*`-variablerne til
+højderne, så tøjet fylder præcis det samme som på forsiden. Er der ikke
+plads nok på en lav skærm, skrumper alle fem proportionalt, fordi
+`flex-shrink` fordeler efter `flex-basis`.
+
+**Forstørrelse:** tryk på et tøjbillede viser det i fuld skærm på et lag
+(`#zoom`), med navnet under. Det virker fire steder — i flat-layet, på
+favoritsiden og begge steder i klædeskabet. Tryk hvor som helst på laget
+eller Escape lukker.
+
+Laget er bevidst **ikke** en `<dialog>`: der er ingen felter at udfylde, så
+backdrop og fokusfælde ville kun være noget at styre udenom. Billedet har sin
+egen klasse (`.zoom-billede`), så `.slot img.garment` ikke rammer det.
+
+I klik-lytterne skal billed-tjekket stå **efter** knapperne. Slet-knappen i
+klædeskabet ligger inde i selve ruden, så tjekker man billedet først, både
+sletter og forstørrer et tryk på ×.
 
 **Menu og visninger:** ☰-knappen i headeren åbner en menu med tre
 visninger (`visView()` i `script.js`):
 
 | Menupunkt | Sektion | Indhold |
 |-----------|---------|---------|
-| Mit klædeskab | `#view-skab` | alt tøjet i et gitter, kategori for kategori |
-| Vælg Outfit | `#view-outfit` | flat-layet, lejlighedsmenuen og meta-chips |
-| Favorit Outfits | `#view-favoritter` | gemte sæt |
+| Mit klædeskab | `#view-skab` | oversigt med en vandret række pr. kategori, plus kategori-siden som en tilstand i samme sektion |
+| Vælg Outfit | `#view-outfit` | flat-layet, lejlighedsmenuen, vejret og meta-chips |
+| Favorit Outfits | `#view-favoritter` | gemte sæt, ét ad gangen |
 
 Menuen folder sig ud fra ikonet (`@keyframes menu-fold-ud`/`-ind` i
 `style.css`), og punkterne daler forskudt ind bagefter.
@@ -198,15 +351,59 @@ skiftes ved at sætte `hidden` på de øvrige. Der er ingen URL pr. visning,
 og valget huskes ikke: appen starter altid på "Vælg Outfit", fordi det er
 det man skal bruge om morgenen.
 
-Footeren hører til visningen: "Vælg Outfit" har shuffle + ☆, "Mit
-klædeskab" har "+ Tilføj tøj", og "Favorit Outfits" har ingen knapper
-(hele footeren skjules). Grupperne står som `.footer-group` med et
-`data-footer`-attribut der matcher visningens navn.
+Footeren hører til visningen: "Vælg Outfit" har shuffle + ☆ + ✓ + ↺, "Mit
+klædeskab" har "+ Tilføj tøj" i begge tilstande, og "Favorit Outfits" har
+ingen knapper (hele footeren skjules). Grupperne står som `.footer-group`
+med et `data-footer`-attribut der matcher visningens navn.
+
+De fire knapper på "Vælg Outfit" er grunden til at `.ghost` har
+`padding-inline:12px` og ikke 16 — ellers blev "Giv mig et sæt" presset over
+to linjer. Fra 344px skærmbredde og op står alt på én linje; en 320px skærm
+(iPhone SE fra 2016) bryder stadig teksten. Skæres der mere, bliver
+knapperne under 40px brede at ramme.
+
+**Mit klædeskab** har **to tilstande i samme sektion** — en oversigt og en
+kategori-side — styret af variablen `skabKategori` (`null` = oversigt).
+
+Det er bevidst **ikke** et fjerde menupunkt. `visView()` er bygget om tre
+faste visninger med hvert sit punkt, og menu-ikonet forvandler sig allerede
+til en tilbage-pil når menuen er åben. En fjerde visning ville betyde enten
+et menupunkt man aldrig vælger direkte, eller to konkurrerende måder at gå
+tilbage på.
+
+**Oversigten** har én vandret række pr. kategori:
+- Rækken scroller med `scroll-snap-type: x proximity`. Ren CSS, ingen JS.
+- Rudebredden er `calc((100% - 3 * 8px) / 3.5)` — en **brøkdel af pladsen,
+  ikke et pixeltal**. De 3,5 er pointen: den fjerde rude er altid halvt
+  synlig som signal om at der er mere, uanset skærmbredde.
+- `min-width:0` på ruderne er nødvendig. Uden den lader `min-width:auto`
+  min-content vinde over `flex-basis`, og lange ord i navnet presser ruden
+  bredere end den skal være.
+- Overskriften er en knap der fører til kategori-siden. Ingen pænhed-badge
+  og ingen slet-knap her — de ville blive ramt ved et uheld under scroll.
+
+**Kategori-siden** har alle genstande i et gitter på tre, pænhed-badge,
+slet-knap på selvtilføjet tøj, og en filterrække: pænhed (Alle/1-5), "Egnet
+til regn" og "Aldrig båret". Filtrene kombineres, er rent DOM-filter, gemmes
+ikke, og nulstilles når man går tilbage. Matcher intet, vises `.tom-besked`.
+
+Man lander **altid** på oversigten når man går ind fra menuen — `visView()`
+nulstiller `skabKategori` og filtrene. Man skal ikke lande i en kategori man
+så i går.
+
+**Sortering:** begge tilstande sorterer efter hvor mange gange hvert stykke
+står i `skabet-log`, flest først. `baaretAntal()` bygger en Map **én gang pr.
+rendering** i stedet for at slå op i loggen for hver genstand. `Array.sort`
+er stabil, så stykker med lige mange gange beholder deres rækkefølge fra
+`items`, og nul gange havner naturligt til sidst.
 
 I klædeskabet kan kun tøj tilføjet via formularen slettes (× på ruden) —
 det hardcodede tøj står i `files` og skal fjernes der. Ruderne er
 kvadratiske, netop så billedet kan roteres 90 grader uden at stikke uden
 for sin rude.
+
+Bemærk at `shorts` optræder som sin egen kategori i klædeskabet, selvom den
+ikke har noget slot i flat-layet.
 
 **Billedskift (crossfade):** `renderSlot()` lader gammelt og nyt billede
 ligge oveni hinanden i samme grid-celle (`grid-area:1/1` på `.garment`)
@@ -218,10 +415,11 @@ Slots uden tøj rendres som stiplede felter i stedet for at blive skjult
 (sker i praksis ikke længere, siden alle fem kategorier altid vælges,
 men koden er der stadig som sikkerhedsnet).
 
-**Shorts:** over 22 grader skifter `buildOutfit()` puljen for `bottom`-slottet
-fra kategorien `bottom` til `shorts` (se kommentaren ved `benKat` i
-`buildOutfit()`) — selve slottet hedder stadig `bottom`, der findes ikke
-noget separat shorts-slot i layoutet.
+**Shorts:** over 22 grader skifter puljen for `bottom`-slottet fra kategorien
+`bottom` til `shorts` — selve slottet hedder stadig `bottom`, der findes ikke
+noget separat shorts-slot i layoutet. Reglen står i funktionen
+`benKategori()`, ikke inde i `buildOutfit()`, fordi `retEfterVejr()` skal
+stille samme spørgsmål igen når vejret lander.
 
 **Størrelse og placering per kategori:** hver af de fem kategorier har sine
 egne CSS custom properties i `:root` (`style.css`) til både tøjbilledet og
@@ -294,9 +492,30 @@ andre.
   sammen eller forsvinder (fx et menu-ikon uden størrelse). Det er sket flere
   gange og er nu den faste forklaring at tjekke først, når noget "ikke er
   opdateret" på telefonen.
-- Tøj-billedet (det faktiske billede af en genstand) har altid klassen
-  `garment`, adskilt fra ikon-billeder (lås/pil), så CSS-reglerne for
-  rotation/størrelse/crossfade ikke ved et uheld rammer ikonerne.
+- Tøj-billedet **i et slot i flat-layet** har altid klassen `garment`,
+  adskilt fra ikon-billeder (lås/pil), så CSS-reglerne for
+  rotation/størrelse/crossfade ikke ved et uheld rammer ikonerne. Klassen er
+  forbeholdt netop det: klædeskabet (`.ward-billede img`), favoritvisningen
+  (`.fav-billede`) og forstørrelsen (`.zoom-billede`) har hver deres egen
+  klasse, fordi `.slot img.garment` er bundet til slottets
+  `container-type:size` og til `--h-*`-højderne. Genbrug ikke `garment`,
+  `.lay` eller `.slot` uden for flat-layet — kopiér teknikken i stedet.
+- **Vandret bladring laves med CSS scroll-snap, ikke JS.** Både klædeskabets
+  rækker (`x proximity`) og favoritbåndet (`x mandatory`) er ren CSS. Der er
+  ingen swipe-lyttere, ingen touch-håndtering og intet bibliotek i appen, og
+  det skal der blive ved med ikke at være.
+- **Et lag der animerer ind og ud, skjules med en timer — ikke med
+  `animationend`.** Mønstret bruges tre steder: menuen (`MENU_LUK_MS`),
+  lejlighedsvælgeren (`VAELGER_LUK_MS`) og forstørrelsen (`ZOOM_LUK_MS`).
+  Grunden er at `animationend` aldrig udløses hvis brugeren har slået
+  animationer fra i systemet, og laget så aldrig ville blive skjult. Ændrer
+  du varigheden i CSS, skal konstanten følge med.
+- Knap-feedback trigges fra JS via `bump()`, ikke via `:active` — det sidste
+  er ikke pålideligt på iOS Safari. Funktionen er generisk: den bruges både
+  af pilene i flat-layet og af fortryd-knappens rotation.
+- Alle animationer skal også være slået fra under
+  `@media (prefers-reduced-motion:reduce)`. Tilføjer du en ny, tilføj den
+  også der.
 
 ## Kendte problemer
 
@@ -305,6 +524,15 @@ andre.
   mellem tøjstykker fotograferet på forskellig afstand. Reel fysisk
   størrelsesforskel (en jakke fylder mere end et t-shirt) er stadig korrekt
   og skal ikke rettes.
+- **Rækkefølgen i klædeskabet ser usorteret ud indtil `skabet-log` har data.**
+  Den er sorteret efter antal gange båret, men før jeg har trykket ✓ nogle
+  gange er alle tal 0, og en stabil sortering lader dem stå i den rækkefølge
+  de har i `files`. Det ligner en fejl, men er det ikke — det er
+  sorteringen der ikke har noget at gå efter endnu.
+- `img/next-icon.jpg` bruges ikke af noget. Den er fra før pilene erstattede
+  swipe. Kan slettes.
+- `aktivView` i `script.js` sættes af `visView()`, men læses ingen steder.
+  Den er efterladt fra dengang footeren blev styret på en anden måde.
 
 ## Roadmap
 
@@ -328,6 +556,40 @@ Rækkefølgen er bevidst. Tag ét trin ad gangen, og spørg før du springer fre
 
 Roadmappet er dermed gennemført. Videre arbejde er ad hoc-forbedringer,
 ikke en fast rækkefølge længere.
+
+### Lavet siden roadmappet blev gennemført
+
+Kort liste, så det er til at se hvad der er kommet til. Detaljerne står i
+"Sådan virker logikken".
+
+- Vejrkilden skiftet fra Open-Meteo til yr.no, og begrænset til kl. 10-20
+  i stedet for hele døgnet.
+- Nedbørsgrænse på regnjakken, så et regnsymbol alene ikke er nok.
+- Sættet vises straks ved opstart; vejret retter kun de slots der er forkerte.
+- Lejlighedsmenu (`paenhed` 1-5 på alt tøj) med egen vælger i stedet for
+  en `<select>`.
+- ✓-knap og `skabet-log`, plus karantæne på nyligt båret tøj.
+- Fortryd-knap (↺), ét skridt tilbage.
+- Forstørrelse af tøjbilleder ved tryk.
+- "Mit klædeskab" og "Favorit Outfits" begge skrevet om fra bunden.
+
+### Ligger og venter
+
+Ikke besluttet, ikke i gang. Rækkefølgen er ikke fastlagt.
+
+1. **Farvefelt på tøjet og regler mod farvekollision.** Datamodellen har
+   plads til det (`color_primary`/`color_second` i skemaet nedenfor), men
+   hverken felterne eller reglerne er besluttet. Det svære er ikke at gemme
+   farven, men at afgøre hvad der egentlig kolliderer — det skal tænkes
+   igennem før der kodes.
+2. **Arkiv-status i stedet for sletning.** Tøj man ikke går i længere skal
+   kunne tages ud af puljen uden at forsvinde, så gamle favoritter og
+   `skabet-log` beholder mening. Ville også fjerne "manglende stykke"-
+   tilfældet på favoritsiden.
+3. **Eksport og import af `localStorage`-data som backup.** Alt ligger på én
+   enhed uden synkronisering: rydder Safari webstedsdata, er favoritter,
+   log, selvtilføjet tøj og lejlighedsvalg væk. En knap der lægger de fem
+   nøgler i én JSON-fil og kan læse den ind igen ville dække det.
 
 Ikke på roadmappet: AI-genererede outfits, brugerkonti, deling.
 
