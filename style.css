@@ -682,19 +682,33 @@ main{flex:1;padding:0 20px 20px}
   margin:0 2px 8px;
 }
 
-/* Hele saettet skal kunne ses uden at scrolle lodret paa en telefon. */
+/* Samme hoejder som flat-layet, saa toejet fylder det samme som paa forsiden -
+   sko fylder fx kun 45px, ellers bliver de urimeligt store ved siden af jakken.
+   Hoejden er summen af de fem, men aldrig mere end skaermen har plads til:
+   bliver der for lidt, skrumper alle fem PROPORTIONALT, fordi flex-shrink
+   fordeler efter flex-basis. Saa holder forholdet mellem dem uanset skaerm. */
 .fav-stak{
   display:flex;
   flex-direction:column;
-  gap:2px;
-  height:min(62svh, 520px);
+  gap:1px;                   /* samme som .lay */
+  height:min(
+    calc(100svh - 250px),
+    calc(var(--h-jacket) + var(--h-mid) + var(--h-top) + var(--h-bottom) + var(--h-shoes) + 4px)
+  );
 }
 
 .fav-plads{
   position:relative;
-  flex:1;
+  flex:0 1 auto;
   container-type:size;       /* goer cqw/cqh tilgaengelig, som i flat-layet */
 }
+
+/* Raekkefoelgen er outerwear, mid, top, bottom, shoes - se FAV_SLOTS i script.js. */
+.fav-stak .fav-plads:nth-child(1){flex-basis:var(--h-jacket)}
+.fav-stak .fav-plads:nth-child(2){flex-basis:var(--h-mid)}
+.fav-stak .fav-plads:nth-child(3){flex-basis:var(--h-top)}
+.fav-stak .fav-plads:nth-child(4){flex-basis:var(--h-bottom)}
+.fav-stak .fav-plads:nth-child(5){flex-basis:var(--h-shoes)}
 
 .fav-plads.tom{
   border:1px dashed var(--line);
