@@ -16,6 +16,10 @@ To ting sker per billede:
 2. Den hvide luft omkring toejet beskaeres vaek, saa motivet fylder rammen ud
    ligesom de gamle billeder gjorde. Der fjernes kun raekker og kolonner der
    er HELT baggrund - en raekke der rammer toejet bliver staaende.
+
+Der gemmes som JPEG, ikke PNG. Billederne er fotografier uden gennemsigtighed,
+og PNG fylder her syv gange mere uden synlig gevinst: 119 stykker gik fra
+106 MB til 14 MB ved kvalitet 88.
 """
 from pathlib import Path
 from collections import deque
@@ -23,7 +27,8 @@ from PIL import Image
 
 IND  = Path("klar")
 UD   = Path("klar-klargjort")
-LUFT = 0.02          # andel af motivets stoerrelse der beholdes som ramme
+LUFT     = 0.02      # andel af motivets stoerrelse der beholdes som ramme
+KVALITET = 88        # JPEG-kvalitet - 88 er visuelt uskelneligt fra PNG her
 TRIN = (12, 30, 45)  # tolerancer der proeves i raekkefoelge
 
 
@@ -99,7 +104,8 @@ if __name__ == "__main__":
     rester = []
     for p in filer:
         billede, tolerance = klargoer(p)
-        billede.save(UD / p.name)
+        billede.save(UD / (p.stem + ".jpg"), "JPEG",
+                     quality=KVALITET, optimize=True, progressive=True)
         w, h = billede.size
         px = billede.load()
         hjoerne = min(sum(px[x, y])//3 for x, y in

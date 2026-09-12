@@ -32,8 +32,8 @@ skabet/
     lock-icon.jpg       laase-ikon (bruges)
     pil.jpg             pil-ikon til skift-knapperne (bruges, zoomet ind i CSS)
     next-icon.jpg        gammelt "skift"-ikon fra foer swipe/pile - ubrugt
-    outerwear-*.png, mid-*.png, top-*.png, bottom-*.png, shoes-*.png   produktbilleder
-    shorts-*.png          shorts-pulje, se "Sådan virker logikken"
+    outerwear-*.jpg, mid-*.jpg, top-*.jpg, bottom-*.jpg, shoes-*.jpg   produktbilleder
+    shorts-*.jpg          shorts-pulje, se "Sådan virker logikken"
     original-jpg/       de oprindelige fotos, git-ignoreret, bruges ikke af appen
   raw/                  de 119 fotos som de kom fra kameraet, git-ignoreret
   klar/                 modellens raa output, git-ignoreret
@@ -56,8 +56,8 @@ opstart (`rebuildItems()`):
 1. **Hardcodet** i objektet `files` øverst i `script.js`:
    ```js
    const files = {
-     "top-7.png":       { navn: "Sort t-shirt", paenhed: 4 },
-     "outerwear-14.png":{ navn: "Sort lang frakke", regn: true, paenhed: 5 },
+     "top-7.jpg":       { navn: "Sort t-shirt", paenhed: 4, farve: "sort", moenster: "ensfarvet" },
+     "outerwear-14.jpg":{ navn: "Sort lang frakke", regn: true, paenhed: 5, farve: "sort", moenster: "ensfarvet" },
      ...
    };
    ```
@@ -455,8 +455,13 @@ To scripts, som køres i rækkefølge:
    modellen til at vende motivet rigtigt.** Uden det arvede den bare
    originalfotoets rotation.
 2. **`klargoer.py`** læser `klar/` og skriver `klar-klargjort/`. Den maler
-   baggrunden rent hvid og beskærer den hvide luft væk, så tøjet fylder
-   rammen. Den koster ingenting og kan køres igen.
+   baggrunden rent hvid, beskærer den hvide luft væk så tøjet fylder rammen,
+   og gemmer som **JPEG** i kvalitet 88. Den koster ingenting og kan køres igen.
+
+   Formatet er ikke ligegyldigt: som PNG fyldte de 119 billeder 106 MB, som
+   JPEG fylder de 14 MB — syv gange mindre uden synlig forskel, heller ikke
+   på skarp tekst i et print. PNG gav mening dengang billederne var
+   fritlagte og skulle bruge gennemsigtighed; det skal de ikke længere.
 
 Indholdet af `klar-klargjort/` kopieres derefter til `img/`. **Husk at bumpe
 `ASSET_VERSION`** — filnavnene er de samme, så Safari viser ellers de gamle.
