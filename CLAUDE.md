@@ -32,9 +32,15 @@ skabet/
     lock-icon.jpg       laase-ikon (bruges)
     pil.jpg             pil-ikon til skift-knapperne (bruges, zoomet ind i CSS)
     next-icon.jpg        gammelt "skift"-ikon fra foer swipe/pile - ubrugt
-    outerwear-*.png, mid-*.png, top-*.png, bottom-*.png, shoes-*.png   fritlagte PNG'er
+    outerwear-*.png, mid-*.png, top-*.png, bottom-*.png, shoes-*.png   produktbilleder
     shorts-*.png          shorts-pulje, se "Sådan virker logikken"
     original-jpg/       de oprindelige fotos, git-ignoreret, bruges ikke af appen
+  raw/                  de 119 fotos som de kom fra kameraet, git-ignoreret
+  klar/                 modellens raa output, git-ignoreret
+  klar-klargjort/       efter klargoer.py - det der ligger i img/, git-ignoreret
+  ikkeToj/              next-icon.jpg, flyttet ud af raw/ fordi den ikke er toej
+  toj.py                sender billeder til Gemini, se "Billederne"
+  klargoer.py           gor modellens output klar til appen, se "Billederne"
   CLAUDE.md
 ```
 
@@ -399,8 +405,8 @@ er stabil, så stykker med lige mange gange beholder deres rækkefølge fra
 
 I klædeskabet kan kun tøj tilføjet via formularen slettes (× på ruden) —
 det hardcodede tøj står i `files` og skal fjernes der. Ruderne er
-kvadratiske, netop så billedet kan roteres 90 grader uden at stikke uden
-for sin rude.
+kvadratiske, hvilket giver et roligt gitter uanset om billedet er stående
+(tøj) eller liggende (sko).
 
 Bemærk at `shorts` optræder som sin egen kategori i klædeskabet, selvom den
 ikke har noget slot i flat-layet.
@@ -432,6 +438,53 @@ ikonerne, uafhængigt af hinanden:
 hvor `<kategori>` er `jacket`, `mid`, `top`, `bottom` eller `shoes`. Det er
 den letteste måde at justere udseendet af én kategori uden at påvirke de
 andre.
+
+## Billederne
+
+Billederne i `img/` er ikke fotos længere. De er lavet ud fra mine egne fotos
+med Gemini (`gemini-3-pro-image`) via **Vertex AI**, så forbruget trækkes fra
+Google Cloud-kreditten — AI Studios prepay-saldo er en anden pengekasse, og
+trial-kreditten kan ikke bruges der. 119 billeder kostede cirka 100 kr.
+
+To scripts, som køres i rækkefølge:
+
+1. **`toj.py`** sender hvert foto i `raw/` til modellen og gemmer svaret i
+   `klar/`. Prompten vælges ud fra filnavnets præfiks (`PROMPTS`), og
+   billedformatet ligeså (`FORMATER`). Tøj bedes om et stående 3:4-format og
+   sko om et liggende 4:3 — **det er formatet, ikke prompten, der får
+   modellen til at vende motivet rigtigt.** Uden det arvede den bare
+   originalfotoets rotation.
+2. **`klargoer.py`** læser `klar/` og skriver `klar-klargjort/`. Den maler
+   baggrunden rent hvid og beskærer den hvide luft væk, så tøjet fylder
+   rammen. Den koster ingenting og kan køres igen.
+
+Indholdet af `klar-klargjort/` kopieres derefter til `img/`. **Husk at bumpe
+`ASSET_VERSION`** — filnavnene er de samme, så Safari viser ellers de gamle.
+
+Ting der er lært undervejs, og som koster penge at finde ud af igen:
+
+- **Kvoten rammes før pengene.** Et nyt Google Cloud-projekt har lav kvote på
+  billedmodellen, og svaret er `429 RESOURCE_EXHAUSTED` — det handler om kald
+  per minut, ikke om beløb. Derfor `PAUSE` og den lange ventetid i `toj.py`.
+  Afviste kald koster ingenting.
+- **Modellen kan ikke lave gennemsigtig baggrund.** Beder man om det, maler
+  den en grå flade i stedet. Derfor den hvide baggrund overalt i appen.
+- **Fritlægning bagefter virker ikke på lyst tøj.** Hvid sko mod hvid
+  baggrund har ingen kant at stoppe ved, og flood fill æder skoen. Kun
+  `klargoer.py`s forsigtige variant er sikker, fordi den kun rører
+  sammenhængende baggrund fra kanten.
+- **Hver kørsel er en ny fortolkning.** Kører man et billede om, kommer tøjet
+  tilbage lidt anderledes — ved en genkørsel skiftede en Asics-sko sin røde
+  "GEL"-tekst ud med "asics". Kør kun om når det er nødvendigt.
+- **Små tekster bliver til vrøvl.** Brødteksten på et print gengives efter
+  hukommelsen og bliver til pseudo-tekst. Det gælder uanset prompt og kan
+  ikke undgås.
+- **Farverne kan have flyttet sig.** Prompten fjerner falmning og
+  misfarvning, så `farve`-feltet i `files` — som blev sat ud fra de gamle
+  fotos — kan passe dårligere nu.
+
+`raw/`, `klar/` og `klar-klargjort/` er git-ignorerede: de fylder over 600 MB
+tilsammen, og repoet er offentligt.
 
 ## Konventioner
 
@@ -469,15 +522,18 @@ andre.
 - Billeder vises med `object-fit: contain` i slots med fast højde. Det er
   det der holder layoutet stabilt når fotos har forskellige dimensioner.
   Lav det ikke om til `cover`.
-- `.slot` er `display:grid` (ikke flex) med `container-type:size` — det
-  er det der gør `cqw`/`cqh`-enhederne tilgængelige, som bruges til at
-  kompensere for at alt tøj (også sko, siden seneste fotoomgang) er
-  fotograferet på siden og roteres 90 grader i CSS (`transform:rotate(90deg)`).
-  Almindelig `%`-baseret `max-height` er upålidelig i et grid uden fast
-  række-højde — brug cqw/cqh, ikke `%`, til billedstørrelse i `.slot`.
-  Et enkelt billede der er gemt allerede opret (i stedet for på siden) vil
-  blive drejet forkert af denne fælles regel — ret i så fald selve
-  billedfilen (rotér den), ikke CSS'en.
+- `.slot` har `container-type:size`, hvilket gør `cqw`/`cqh`-enhederne
+  tilgængelige. Almindelig `%`-baseret `max-height` er upålidelig i et grid
+  uden fast række-højde — brug cqw/cqh, ikke `%`, til billedstørrelse i
+  `.slot`. Billederne er **oprette** og drejes ikke længere i CSS; indtil
+  september 2026 lå alt tøj på siden i filerne og blev drejet 90 grader af
+  en fælles regel. Den er væk. Lægger du et nyt billede ind, skal det være
+  vendt rigtigt i selve filen.
+- **Billederne har hvid baggrund, ikke gennemsigtighed.** Derfor er alle de
+  flader de vises på hvide: `.lay`, `.ward-billede`, `.fav-stak` og `#zoom`.
+  Ændrer du en af dem til papirfarven, står tøjet i en synlig hvid firkant.
+  Af samme grund har `.slot img.garment` ingen `drop-shadow` længere — den
+  faldt langs den firkantede ramme i stedet for langs tøjets silhuet.
 - Skifter du indholdet af en billedfil UDEN at ændre filnavnet (fx retter
   en fejl som ovenstående), så bump `ASSET_VERSION` i `script.js` (lige
   over `builtInItems`). Ellers bliver den gamle udgave siddende fast i

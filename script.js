@@ -135,7 +135,7 @@ const files = {
 /* Saet denne op naar et billede erstattes med et nyt UNDER SAMME filnavn
    (fx efter en rettelse som denne). Ellers bliver den gamle udgave siddende
    fast i Safaris cache paa telefonen, selvom filen er skiftet ud paa serveren. */
-const ASSET_VERSION = "20260831b";
+const ASSET_VERSION = "20260912a";
 
 /* Paenhed gaar fra 1 (mest afslappet) til 5 (pusset op) og bruges til at
    matche toejet med den valgte lejlighed. Toej uden en vaerdi lander paa

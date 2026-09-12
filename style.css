@@ -17,8 +17,7 @@
   --y-top:0px;
   --y-bottom:0px;
   --y-shoes:0px;
-  /* Vandret opdeling af hver slot: toejet faar venstre 2/3, ikonerne hoejre 1/3.
-     Billedet er roteret 90 grader, saa dets VISUELLE bredde styres af height (cqw). */
+  /* Vandret opdeling af hver slot: toejet faar venstre 2/3, ikonerne hoejre 1/3. */
   --toej-felt:66%;      /* hvor stor en del af bredden toejet raader over */
   --toej-bredde:66cqw;  /* samme tal som --toej-felt, men som maal til billedet */
   --toej-x:33%;         /* midten af toejets felt, maalt fra venstre kant */
@@ -370,7 +369,7 @@ main{flex:1;padding:0 20px 20px}
   height:100%;
   padding:8px;
   object-fit:contain;
-  transform:translate(-50%,-50%) rotate(90deg);
+  transform:translate(-50%,-50%);
 }
 
 .ward-paenhed{
@@ -548,13 +547,14 @@ main{flex:1;padding:0 20px 20px}
   position:absolute;        /* gammelt og nyt billede ligger oveni hinanden under en crossfade */
   left:var(--toej-x);       /* centreret i venstre 2/3 i stedet for i hele boksen */
   top:50%;                  /* overskrives per kategori herover */
-  width:100cqh;             /* faste maal (ikke max-*) - cqw/cqh byttet om fordi billedet roteres 90 grader */
-  height:var(--toej-bredde);/* undgaar en uklar Safari-opfoersel hvor max-width/max-height ikke altid klemmer ned */
-  transform:translate(-50%,-50%) rotate(90deg);
+  width:var(--toej-bredde); /* faste maal (ikke max-*) - undgaar en uklar Safari- */
+  height:100cqh;            /* opfoersel hvor max-width/max-height ikke altid klemmer ned */
+  transform:translate(-50%,-50%);
   object-fit:contain;      /* holder proportionerne inden for den faste boks */
   display:block;
-  border-radius:8px;       /* pynter paa firkantede JPG'er, usynlig paa fritlagte PNG'er */
-  filter:drop-shadow(0 6px 10px rgba(23,24,26,.10));
+  /* Ingen drop-shadow: billederne har hvid baggrund i stedet for at vaere
+     fritlagte, saa skyggen ville falde langs den firkantede ramme i stedet
+     for langs toejets silhuet. */
   transition:opacity .32s ease;
 }
 
@@ -691,6 +691,10 @@ main{flex:1;padding:0 20px 20px}
   display:flex;
   flex-direction:column;
   gap:1px;                   /* samme som .lay */
+  background:var(--card);    /* hvidt kort, saa billedernes hvide baggrund gaar i et */
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:8px;
   height:min(
     calc(100svh - 250px),
     calc(var(--h-jacket) + var(--h-mid) + var(--h-top) + var(--h-bottom) + var(--h-shoes) + 4px)
@@ -719,10 +723,10 @@ main{flex:1;padding:0 20px 20px}
   position:absolute;
   top:50%;
   left:50%;
-  width:100cqh;              /* byttet om, fordi billedet roteres 90 grader */
-  height:100cqw;
+  width:100cqw;
+  height:100cqh;
   object-fit:contain;
-  transform:translate(-50%,-50%) rotate(90deg);
+  transform:translate(-50%,-50%);
 }
 
 .fav-mangler{
@@ -789,23 +793,20 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   position:fixed;
   inset:0;
   z-index:30;
-  background:var(--paper);
+  background:#fff;          /* samme hvid som billedernes baggrund */
   cursor:pointer;
 }
 
-/* Billedet er fotograferet paa siden og roteres 90 grader ligesom i slottet.
-   Derfor er maalene byttet om: elementets width bliver den VISUELLE hoejde,
-   og height bliver den visuelle bredde. De 120px holder plads til navnet
-   nedenunder, de 48px er luft i siderne. Absolut placering, fordi et roteret
-   element ellers fylder sin ikke-roterede kasse i layoutet. */
+/* De 120px holder plads til navnet nedenunder, de 48px er luft i siderne.
+   Absolut placering, saa billedet kan centreres uden at paavirke laget. */
 .zoom-billede{
   position:absolute;
   top:50%;
   left:50%;
-  width:calc(100svh - 120px);
-  height:calc(100vw - 48px);
+  width:calc(100vw - 48px);
+  height:calc(100svh - 120px);
   object-fit:contain;          /* aldrig cover - toejet maa ikke beskaeres */
-  transform:translate(-50%,-50%) rotate(90deg);
+  transform:translate(-50%,-50%);
 }
 
 /* Baggrunden toner ind, og billedet vokser en anelse med - saa foles det som
@@ -823,8 +824,8 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 }
 
 @keyframes zoom-billede-ind{
-  0%   {transform:translate(-50%,-50%) rotate(90deg) scale(.88)}
-  100% {transform:translate(-50%,-50%) rotate(90deg) scale(1)}
+  0%   {transform:translate(-50%,-50%) scale(.88)}
+  100% {transform:translate(-50%,-50%) scale(1)}
 }
 
 .zoom.aaben{animation:zoom-ind .22s ease both}

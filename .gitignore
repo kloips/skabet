@@ -1,3 +1,7 @@
 .DS_Store
 img/original-jpg/
 .claude/
+.env
+raw/
+klar/
+klar-klargjort/
