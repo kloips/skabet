@@ -37,8 +37,8 @@ skabet/
     original-jpg/       de oprindelige fotos, git-ignoreret, bruges ikke af appen
   raw/                  de 119 fotos som de kom fra kameraet, git-ignoreret
   klar/                 modellens raa output, git-ignoreret
-  klar-klargjort/       efter klargoer.py - det der ligger i img/, git-ignoreret
-  ikkeToj/              next-icon.jpg, flyttet ud af raw/ fordi den ikke er toej
+  klar-klargjort/       efter klargoer.py - kopieres til img/, git-ignoreret,
+                        slettes trygt (klargoer.py laver den igen gratis)
   toj.py                sender billeder til Gemini, se "Billederne"
   klargoer.py           gor modellens output klar til appen, se "Billederne"
   CLAUDE.md
@@ -488,8 +488,15 @@ Ting der er lært undervejs, og som koster penge at finde ud af igen:
   misfarvning, så `farve`-feltet i `files` — som blev sat ud fra de gamle
   fotos — kan passe dårligere nu.
 
-`raw/`, `klar/` og `klar-klargjort/` er git-ignorerede: de fylder over 600 MB
-tilsammen, og repoet er offentligt.
+`raw/`, `klar/` og `klar-klargjort/` er git-ignorerede: de fylder flere
+hundrede MB tilsammen, og repoet er offentligt. **Appen bruger kun `img/`** —
+de tre andre er arbejdsmapper.
+
+Behold dem alligevel. `raw/` er dine originalfotos og kan ikke genskabes uden
+at fotografere hele garderoben om. `klar/` er modellens output: uden den
+koster det ~100 kr hos Google at justere beskæring eller baggrund igen, med
+den kan `klargoer.py` køres om gratis. Kun `klar-klargjort/` er uden værdi —
+den laves på sekunder ud fra `klar/`.
 
 ## Konventioner
 
