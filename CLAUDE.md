@@ -192,6 +192,19 @@ trækker regnjakken, og tilbage til `false` bagefter. Dermed tæller rettelsen
 som dagens første sæt, og et efterfølgende tryk på "Giv mig et sæt" har alle
 jakker i spil igen.
 
+**Forhentning af billeder:** `renderSlot()` venter på `load` før det nye
+billede fades ind, så første gang et stykke vises, koster det en tur til
+serveren — det var "delayet" på pilene og "Giv mig et sæt", som kun kom
+nogle gange (cachet = øjeblikkeligt, ikke cachet = vent). `forhentBilleder()`
+henter derfor hele garderoben i baggrunden, **efter** sættet er vist og
+vejret er landet (eller efter `FORHENT_VENT_MS` hvis vejret hænger). Ét
+billede ad gangen, så den aldrig konkurrerer med det der er på skærmen, og
+i rundgang kategori for kategori, så alle kategorier dækkes samtidig. Det er
+14 MB én gang pr. enhed — Safari beholder dem på tværs af besøg, indtil
+`ASSET_VERSION` bumpes. Bevidst **ikke** en service worker: det ville give
+rigtig offline-brug, men er et helt andet lag med egen cache-logik, se
+"Ligger og venter".
+
 **Lejlighed:** menuen over flat-layet vælger hvor pænt tøjet skal være.
 Hver lejlighed er et interval på `paenhed` (`OCCASIONS` i `script.js`):
 Alt 1-5, Fint tøj 5, Fødselsdag 4-5, Skole 1-4, ØLLGAARD 3-5, Arbejde 1-2.
@@ -707,6 +720,8 @@ Kort liste, så det er til at se hvad der er kommet til. Detaljerne står i
 - "Mit klædeskab" og "Favorit Outfits" begge skrevet om fra bunden.
 - "Byg sæt": manuelt sammensatte favoritter, gemt i samme struktur med
   `kilde: "manuel"`.
+- Forhentning af alle billeder i baggrunden, så pilene og "Giv mig et sæt"
+  ikke venter på netværket.
 
 ### Ligger og venter
 
@@ -725,6 +740,11 @@ Ikke besluttet, ikke i gang. Rækkefølgen er ikke fastlagt.
    enhed uden synkronisering: rydder Safari webstedsdata, er favoritter,
    log, selvtilføjet tøj og lejlighedsvalg væk. En knap der lægger de fem
    nøgler i én JSON-fil og kan læse den ind igen ville dække det.
+4. **Service worker til offline-brug.** Forhentningen (se "Sådan virker
+   logikken") gør skiftene øjeblikkelige, men appen kræver stadig net for at
+   åbne. En service worker kunne cache de tre filer og billederne rigtigt.
+   Prisen er et fjerde lag med egen cache-logik og opdateringsproblemer
+   (gamle udgaver der hænger fast) — skal tænkes igennem før det laves.
 
 Ikke på roadmappet: AI-genererede outfits, brugerkonti, deling.
 

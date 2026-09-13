@@ -1452,6 +1452,41 @@ function retEfterVejr(){
   updateWoreButton();
 }
 
+/*---------------------------------------------------------------
+   Forhentning. renderSlot() venter paa at billedet er indlaest foer det
+   fades ind, saa foerste gang et stykke vises, koster det en tur til
+   serveren (typisk 100-500 ms paa mobilnet) - det er "delayet" paa pilene
+   og "Giv mig et saet". Derfor hentes hele garderoben stille i baggrunden
+   naar saettet og vejret er paa plads. Et billede ad gangen, saa det aldrig
+   konkurrerer med det der er paa skaermen, og i rundgang kategori for
+   kategori, saa alle kategorier bliver daekket samtidig i stedet for at
+   alle jakker kommer foerst. Safari cacher dem paa tvaers af besoeg, saa
+   det er 14 MB een gang pr. enhed - ikke hver morgen.
+---------------------------------------------------------------*/
+const FORHENT_VENT_MS = 3000;   // hvis vejret ikke svarer, startes der alligevel efter denne tid
+let forhentStartet = false;
+
+function forhentBilleder(){
+  if (forhentStartet) return;
+  forhentStartet = true;
+
+  // Rundgang: foerste stykke i hver kategori, saa andet stykke i hver, osv.
+  const perKat = CATS.map(kat => items.filter(i => i.category === kat));
+  const koe = [];
+  for (let n = 0; koe.length < items.length; n++){
+    perKat.forEach(liste => { if (liste[n]) koe.push(liste[n]); });
+  }
+
+  const naeste = () => {
+    const item = koe.shift();
+    if (!item) return;
+    const img = new Image();
+    img.onload = img.onerror = naeste;   // videre uanset - et fejlet billede skal ikke stoppe resten
+    img.src = item.image;
+  };
+  naeste();
+}
+
 async function init(){
   byggVaelger();
   visValgtLejlighed();              // vaelgeren viser det valg der blev gemt sidst
@@ -1459,6 +1494,7 @@ async function init(){
   shuffle();                        // vises straks - vejret hentes bagefter
   visView("outfit");
 
+  setTimeout(forhentBilleder, FORHENT_VENT_MS);   // sikkerhedsnet hvis vejret haenger eller fejler
   const w = await fetchWeather();
   if (!w) return;                   // ingen forbindelse: saettet staar som det blev bygget
 
@@ -1468,6 +1504,7 @@ async function init(){
   weatherTemp.textContent = `${Math.round(w.min)}–${Math.round(w.max)}°`;
   weatherNavn.textContent = w.navn.charAt(0).toUpperCase() + w.navn.slice(1);
   retEfterVejr();
+  forhentBilleder();                // foerst nu - vejret og det viste saet skal have baandbredden foerst
 }
 
 init();
