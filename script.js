@@ -698,6 +698,7 @@ function visView(navn){
     if (vis) harKnapper = true;
   });
   footerEl.hidden = !harKnapper;
+  favoriteBtn.hidden = navn !== "outfit";   // stjernen i headeren gaelder kun det viste saet
 
   // Man lander altid paa oversigten, aldrig paa den kategori man saa sidst.
   if (navn === "skab"){

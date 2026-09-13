@@ -16,11 +16,12 @@
 <!-- ?v= tvinger Safari til at hente filen paa ny. Bump datoen naar du aendrer
      style.css eller script.js - ellers kan telefonen sidde fast paa en gammel
      udgave, selvom den nye er pushet. -->
-<link rel="stylesheet" href="style.css?v=20260913d">
+<link rel="stylesheet" href="style.css?v=20260913e">
 </head>
 <body>
 
 <header>
+  <div class="header-knapper">
   <button class="menu-btn" id="menuBtn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu">
     <!-- De tre streger er ens - det er kun deres transform der goer dem til
          enten et menu-ikon eller pilespids + skaft. Loekken tegnes ind til sidst. -->
@@ -31,6 +32,9 @@
       <line class="mi-streg mi-bund" x1="4" y1="12" x2="20" y2="12"/>
     </svg>
   </button>
+  <!-- Favorit-knappen hoerer til Vaelg Outfit og skjules i de andre visninger (visView). -->
+  <button class="menu-btn fav-btn" id="favorite" type="button" aria-pressed="false" aria-label="Gem som favorit">☆</button>
+  </div>
   <h1>Skabet</h1>
 </header>
 
@@ -143,7 +147,6 @@
   <!-- Knapperne skifter med visningen - se visView() i script.js. -->
   <div class="footer-group" data-footer="outfit">
     <button class="primary" id="shuffle">Giv mig et sæt</button>
-    <button class="ghost" id="favorite" type="button" aria-pressed="false" aria-label="Gem som favorit">☆</button>
     <button class="ghost" id="woreBtn" type="button" aria-pressed="false" aria-label="Det tog jeg paa i dag">✓</button>
     <!-- disabled staar her og ikke kun i JS, saa knappen ogsaa er slaaet fra
          i det oejeblik siden vises, foer vejret er hentet og shuffle er kaldt. -->
@@ -193,6 +196,6 @@
   </form>
 </dialog>
 
-<script src="script.js?v=20260913d" defer></script>
+<script src="script.js?v=20260913e" defer></script>
 </body>
 </html>
