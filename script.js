@@ -1093,6 +1093,8 @@ const BYG_SLOTS = [
 ];
 const BYG_MIN = 2;        // faerrest stykker et saet kan gemmes med
 const GEMT_MS = 2500;     // hvor laenge "Saettet er gemt" staar
+const BYG_LISTE_LUK_MS = 150;   // matcher byg-liste-ud i style.css
+let bygListeTimer = null;
 let bygValg  = null;      // null = listen vises, ellers { top: id, ... } for byggeren
 let bygAktiv = null;      // det slot hvis liste er foldet ud
 let gemtTimer = null;
@@ -1120,7 +1122,12 @@ function renderBygger(){
   byggerEl.hidden = !aaben;
   bygBtn.hidden = aaben;
   bygGemBtn.hidden = !aaben;
-  if (!aaben) return;
+  if (!aaben){
+    clearTimeout(bygListeTimer);    // lukkes hele byggeren, skal listen bare vaek
+    bygListe.classList.remove("lukker");
+    bygListe.hidden = true;
+    return;
+  }
 
   bygGemBtn.disabled = Object.keys(bygValg).length < BYG_MIN;
 
@@ -1128,8 +1135,8 @@ function renderBygger(){
   // det slot der faktisk skiftede indhold, sin ind-animation, og ringen om
   // det aktive slot kan glide i stedet for at springe.
   if (!bygSlots.children.length){
-    bygSlots.innerHTML = BYG_SLOTS.map(({ kat, navn }) => `
-      <div class="byg-plads">
+    bygSlots.innerHTML = BYG_SLOTS.map(({ kat, navn }, n) => `
+      <div class="byg-plads" style="--i:${n}">
         <button class="byg-slot" type="button" data-slot="${kat}" aria-pressed="false" aria-label="${navn}"></button>
         <span class="byg-navn">${navn}</span>
       </div>`).join("");
@@ -1145,8 +1152,13 @@ function renderBygger(){
     knap.innerHTML = item ? `<img src="${item.image}" alt="">` : `<span aria-hidden="true">+</span>`;
   });
 
-  bygListe.hidden = bygAktiv === null;
-  if (bygAktiv === null) return;
+  if (bygAktiv === null){
+    lukBygListe();
+    return;
+  }
+  clearTimeout(bygListeTimer);      // aabnes igen midt i lukningen, afbrydes den
+  bygListe.classList.remove("lukker");
+  bygListe.hidden = false;
 
   const slot = BYG_SLOTS.find(s => s.kat === bygAktiv);
   bygListeTitel.textContent = "Vælg " + slot.navn.toLowerCase();
@@ -1163,6 +1175,16 @@ function renderBygger(){
     bygListeRaekke.append(kort);
   });
   bygListeRaekke.scrollLeft = 0;
+}
+
+function lukBygListe(){
+  if (bygListe.hidden) return;
+  bygListe.classList.add("lukker");
+  clearTimeout(bygListeTimer);
+  bygListeTimer = setTimeout(() => {
+    bygListe.hidden = true;
+    bygListe.classList.remove("lukker");
+  }, BYG_LISTE_LUK_MS);
 }
 
 byggerEl.addEventListener("click", e => {

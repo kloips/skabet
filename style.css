@@ -245,8 +245,11 @@ main{flex:1;padding:0 20px 20px}
   to  {opacity:1; transform:none}
 }
 
-/* Koerer hver gang hidden fjernes, dvs. ved hvert skift mellem visninger. */
-.view:not([hidden]){animation:ind .26s cubic-bezier(.22,.61,.36,1) backwards}
+/* Koerer hver gang hidden fjernes, dvs. ved hvert skift mellem visninger -
+   og ved skiftet mellem favoritlisten og byggeren, som bor i samme visning. */
+.view:not([hidden]),
+.fav-baand:not([hidden]),
+#bygger:not([hidden]){animation:ind .26s cubic-bezier(.22,.61,.36,1) backwards}
 
 /* Lister daler forskudt ind. --i saettes fra JS (hoejst 8), saa en lang liste
    ikke venter paa sig selv. */
@@ -784,6 +787,8 @@ main{flex:1;padding:0 20px 20px}
   flex:1 1 0;
   min-width:0;
   text-align:center;
+  animation:ind .3s cubic-bezier(.22,.61,.36,1) backwards;   /* de fem slots daler forskudt ind */
+  animation-delay:calc(var(--i,0) * 35ms);
 }
 
 .byg-slot{
@@ -836,6 +841,15 @@ main{flex:1;padding:0 20px 20px}
 }
 
 .byg-liste{animation:ind .22s cubic-bezier(.22,.61,.36,1) backwards}
+
+/* Listen folder ind naar man har valgt, mens stykket popper ind i slottet.
+   Skjules af en timer (BYG_LISTE_LUK_MS), som de andre lag. */
+@keyframes byg-liste-ud{
+  from{opacity:1; transform:none}
+  to  {opacity:0; transform:translateY(-4px)}
+}
+
+.byg-liste.lukker{animation:byg-liste-ud .15s ease-in both}
 
 .byg-liste-hoved{
   display:flex;
@@ -1011,8 +1025,9 @@ dialog h2{
   .zoom.aaben,.zoom.lukker,.zoom.aaben .zoom-billede,
   #undoBtn.bump .undo-ikon{animation:none}
   .zoom.lukker{opacity:0}
-  .view,.ward-gruppe,.ward-grid .ward-item,.byg-liste,.byg-liste .ward-item,
-  .byg-slot > *{animation:none}
+  .view,.fav-baand,#bygger,.byg-plads,.ward-gruppe,.ward-grid .ward-item,
+  .byg-liste,.byg-liste.lukker,.byg-liste .ward-item,.byg-slot > *{animation:none}
+  .byg-liste.lukker{opacity:0}
   .byg-slot{transition:none}
 }
 
