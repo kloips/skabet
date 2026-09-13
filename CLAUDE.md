@@ -598,8 +598,9 @@ den laves på sekunder ud fra `klar/`.
   ingen swipe-lyttere, ingen touch-håndtering og intet bibliotek i appen, og
   det skal der blive ved med ikke at være.
 - **Et lag der animerer ind og ud, skjules med en timer — ikke med
-  `animationend`.** Mønstret bruges tre steder: menuen (`MENU_LUK_MS`),
-  lejlighedsvælgeren (`VAELGER_LUK_MS`) og forstørrelsen (`ZOOM_LUK_MS`).
+  `animationend`.** Mønstret bruges fire steder: menuen (`MENU_LUK_MS`),
+  lejlighedsvælgeren (`VAELGER_LUK_MS`), forstørrelsen (`ZOOM_LUK_MS`) og
+  byggerens liste (`BYG_LISTE_LUK_MS`).
   Grunden er at `animationend` aldrig udløses hvis brugeren har slået
   animationer fra i systemet, og laget så aldrig ville blive skjult. Ændrer
   du varigheden i CSS, skal konstanten følge med.
@@ -610,8 +611,9 @@ den laves på sekunder ud fra `klar/`.
   Kurven til alt der åbner er `cubic-bezier(.22,.61,.36,1)` (menu, vælger,
   zoom, visninger, lister). Ease-in på en indgang føles tøvende og ender
   brat — brug det ikke der. Der er én fælles `@keyframes ind` (fade + glid
-  8px op) til visningsskift (`.view:not([hidden])`), klædeskabets grupper og
-  ruder og byggerens liste; lister daler forskudt ind via `--i`, som sættes
+  8px op) til visningsskift (`.view:not([hidden])`), skiftet mellem
+  favoritlisten og byggeren (`.fav-baand`/`#bygger`), klædeskabets grupper
+  og ruder samt byggerens slots og liste; lister daler forskudt ind via `--i`, som sættes
   inline fra JS og er begrænset til 8, så en lang liste ikke venter på sig
   selv. `animation-fill-mode` er `backwards`, ikke `both` — ellers bliver
   der siddende en transform på elementet, som gør det til containing block
