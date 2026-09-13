@@ -285,11 +285,18 @@ og er aldrig blevet ændret — gamle gemte sæt virker uden migrering.
 **Byg sæt (manuelle favoritter):** "+ Byg sæt" i footeren under Favorit
 Outfits åbner en bygger som en **tilstand i samme sektion** — samme mønster
 som klædeskabets kategori-side, styret af `bygValg` (`null` = listen). Fem
-slots på en række (jakke, trøje, t-shirt, bukser, sko — samme rækkefølge som
-flat-layet; `BYG_SLOTS`),
-tryk på et slot folder en vandret liste ud nedenunder med alt i kategorien.
-Listen genbruger `.ward-raekke` og `lavKort()`, så den bladrer som
-klædeskabet. Underdel-listen viser både `bottom` og `shorts`; valget gemmes
+slots **stablet lodret** i et hvidt kort (`.byg-stak`) med flat-layets
+`--h-*`-højder, så det ligner "Vælg Outfit" (jakke, trøje, t-shirt, bukser,
+sko; `BYG_SLOTS`). Tryk på et slot folder en vandret liste ud **lige under
+det slot** — `renderBygger()` flytter `#bygListe` derhen med `.after()`, og
+flytningen genstarter samtidig ind-animationen. Listen genbruger
+`.ward-raekke` og `lavKort()`, så den bladrer som klædeskabet. Højderne er
+faste (ingen proportional skrumpning som i `.fav-stak`), fordi kortet skal
+kunne vokse med listen; siden scroller i stedet.
+
+Fælden: `aabnBygger()` tømmer `#bygSlots` med `innerHTML = ""`. Listen kan
+stå inde i stakken fra sidst, så den flyttes ud til `#bygger` først — ellers
+bliver den slettet. Underdel-listen viser både `bottom` og `shorts`; valget gemmes
 under `bottom`, præcis som ☆ gør.
 
 Sættet gemmes i `skabet-favorites` i samme form som et gemt forslag, plus

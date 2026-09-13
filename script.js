@@ -1104,7 +1104,8 @@ let gemtTimer = null;
 function aabnBygger(){
   bygValg = {};
   bygAktiv = null;
-  bygSlots.innerHTML = "";   // frisk raekke, saa intet animerer "ind" fra sidste gang
+  byggerEl.append(bygListe);   // listen kan staa inde i stakken - flyt den ud foer stakken toemmes
+  bygSlots.innerHTML = "";     // frisk stak, saa intet animerer "ind" fra sidste gang
   favTilbage.classList.remove("bump");   // ellers spiller nikket i stedet for ind-animationen
   renderBygger();
 }
@@ -1139,20 +1140,19 @@ function renderBygger(){
   // det aktive slot kan glide i stedet for at springe.
   if (!bygSlots.children.length){
     bygSlots.innerHTML = BYG_SLOTS.map(({ kat, navn }, n) => `
-      <div class="byg-plads" style="--i:${n}">
+      <div class="byg-plads" data-slot="${kat}" style="--i:${n}">
         <button class="byg-slot" type="button" data-slot="${kat}" aria-pressed="false" aria-label="${navn}"></button>
-        <span class="byg-navn">${navn}</span>
       </div>`).join("");
   }
-  BYG_SLOTS.forEach(({ kat }) => {
-    const knap = bygSlots.querySelector(`[data-slot="${kat}"]`);
+  BYG_SLOTS.forEach(({ kat, navn }) => {
+    const knap = bygSlots.querySelector(`.byg-slot[data-slot="${kat}"]`);
     const item = items.find(i => i.id === bygValg[kat]);
     knap.setAttribute("aria-pressed", String(bygAktiv === kat));
     knap.classList.toggle("fyldt", !!item);
     const id = item ? String(item.id) : "";
     if (knap.dataset.id === id) return;   // uaendret - roer ikke DOM'en
     knap.dataset.id = id;
-    knap.innerHTML = item ? `<img src="${item.image}" alt="">` : `<span aria-hidden="true">+</span>`;
+    knap.innerHTML = item ? `<img src="${item.image}" alt="">` : `<span aria-hidden="true">+ ${navn}</span>`;
   });
 
   if (bygAktiv === null){
@@ -1161,6 +1161,9 @@ function renderBygger(){
   }
   clearTimeout(bygListeTimer);      // aabnes igen midt i lukningen, afbrydes den
   bygListe.classList.remove("lukker");
+  // Listen flyttes hen lige under det slot der er trykket paa. Flytningen
+  // genstarter ogsaa ind-animationen, saa den folder ud paa det nye sted.
+  bygSlots.querySelector(`.byg-plads[data-slot="${bygAktiv}"]`).after(bygListe);
   bygListe.hidden = false;
 
   const slot = BYG_SLOTS.find(s => s.kat === bygAktiv);

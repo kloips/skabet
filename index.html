@@ -16,7 +16,7 @@
 <!-- ?v= tvinger Safari til at hente filen paa ny. Bump datoen naar du aendrer
      style.css eller script.js - ellers kan telefonen sidde fast paa en gammel
      udgave, selvom den nye er pushet. -->
-<link rel="stylesheet" href="style.css?v=20260913g">
+<link rel="stylesheet" href="style.css?v=20260913h">
 </head>
 <body>
 
@@ -127,10 +127,11 @@
        hoejder - flat-layets .lay/.slot/.garment maa ikke genbruges her. -->
   <div class="fav-baand" id="favoritesList"></div>
 
-  <!-- Byggeren: en raekke slots, og under den listen for det slot der er valgt.
-       Listen genbruger klaedeskabets .ward-raekke, saa den bladrer paa samme maade. -->
+  <!-- Byggeren: de fem slots stablet lodret som i flat-layet. Listen for det
+       slot man har trykket paa, flyttes i JS ind lige under slottet. Den
+       genbruger klaedeskabets .ward-raekke, saa den bladrer paa samme maade. -->
   <div id="bygger" hidden>
-    <div class="byg-raekke" id="bygSlots"></div>
+    <div class="byg-stak" id="bygSlots"></div>
     <div class="byg-liste" id="bygListe" hidden>
       <div class="byg-liste-hoved">
         <h3 class="byg-liste-titel" id="bygListeTitel"></h3>
@@ -197,6 +198,6 @@
   </form>
 </dialog>
 
-<script src="script.js?v=20260913g" defer></script>
+<script src="script.js?v=20260913h" defer></script>
 </body>
 </html>

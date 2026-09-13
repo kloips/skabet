@@ -791,37 +791,58 @@ main{flex:1;padding:0 20px 20px}
   margin:0 2px 8px;
 }
 
-/* Byg saet: fem slots paa en raekke. Bredden er en femtedel af pladsen, ikke
-   et pixeltal, saa raekken altid passer paa en linje. Slottet er en knap - et
-   tryk aabner listen for kategorien nedenunder. */
-.byg-raekke{
+/* Byg saet: de fem slots stablet lodret i et hvidt kort med samme hoejder som
+   flat-layet (--h-*), saa det ligner "Vaelg Outfit". Hoejderne er faste - kortet
+   maa gerne blive hoejere end skaermen, for listen for det slot man har trykket
+   paa, folder ud lige under slottet og skal have plads. */
+.byg-stak{
   display:flex;
-  gap:6px;
-  margin-bottom:16px;
+  flex-direction:column;
+  gap:1px;                   /* samme som .lay */
+  background:var(--card);    /* hvidt kort, saa billedernes hvide baggrund gaar i et */
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:8px;
 }
 
 .byg-plads{
-  flex:1 1 0;
-  min-width:0;
-  text-align:center;
+  flex:none;
   animation:ind .3s cubic-bezier(.22,.61,.36,1) backwards;   /* de fem slots daler forskudt ind */
   animation-delay:calc(var(--i,0) * 35ms);
 }
 
+/* Raekkefoelgen er BYG_SLOTS i script.js - samme som flat-layet. */
+.byg-plads[data-slot="outerwear"]{height:var(--h-jacket)}
+.byg-plads[data-slot="mid"]      {height:var(--h-mid)}
+.byg-plads[data-slot="top"]      {height:var(--h-top)}
+.byg-plads[data-slot="bottom"]   {height:var(--h-bottom)}
+.byg-plads[data-slot="shoes"]    {height:var(--h-shoes)}
+
+/* Slottet er en knap i fuld bredde. Tomt: stiplet felt med "+ Jakke". Fyldt:
+   kun billedet, uden ramme, som i flat-layet. */
 .byg-slot{
-  display:block;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   position:relative;
   width:100%;
-  aspect-ratio:1;
+  height:100%;
   padding:0;
   border:1px dashed var(--line);
   border-radius:10px;
-  background:var(--card);   /* hvid, saa billedets hvide baggrund gaar i et */
+  background:var(--card);
   color:var(--ink-soft);
-  font-size:18px;
+  font-size:13px;
   font-weight:400;
   overflow:hidden;
   transition:border-color .15s ease, box-shadow .15s ease;
+}
+
+.byg-slot.fyldt{border-style:solid;border-color:transparent}
+
+.byg-slot[aria-pressed="true"]{
+  border-color:var(--accent);
+  box-shadow:0 0 0 1px var(--accent);
 }
 
 /* Det valgte stykke popper ind i slottet. Rammer kun nyt indhold, fordi
@@ -833,31 +854,19 @@ main{flex:1;padding:0 20px 20px}
 
 .byg-slot > *{animation:byg-fyld .3s cubic-bezier(.22,.61,.36,1) backwards}
 
-.byg-slot.fyldt{border-style:solid}
-
-.byg-slot[aria-pressed="true"]{
-  border-color:var(--accent);
-  box-shadow:0 0 0 1px var(--accent);
-}
-
 .byg-slot img{
   position:absolute;
   inset:0;
   width:100%;
   height:100%;
-  padding:4px;
+  padding:2px;
   object-fit:contain;
 }
 
-.byg-navn{
-  display:block;
-  font-size:10px;
-  line-height:1.3;
-  color:var(--ink-soft);
-  margin-top:4px;
+.byg-liste{
+  margin:8px 0;
+  animation:ind .22s cubic-bezier(.22,.61,.36,1) backwards;
 }
-
-.byg-liste{animation:ind .22s cubic-bezier(.22,.61,.36,1) backwards}
 
 /* Listen folder ind naar man har valgt, mens stykket popper ind i slottet.
    Skjules af en timer (BYG_LISTE_LUK_MS), som de andre lag. */
