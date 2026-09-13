@@ -135,8 +135,21 @@ main{flex:1;padding:0 20px 20px}
 }
 
 /* Menu-ikonet og byggerens tilbage-knap side om side. */
-.header-knapper{display:flex;align-items:center;gap:12px}
-.header-knapper .skab-tilbage{margin:0}
+.header-knapper{display:flex;align-items:center;gap:8px}
+
+/* Tilbage-pilen glider ind naar byggeren aabner, og nikker mod venstre ved
+   tryk (bump() fra JS, samme princip som pilene i flat-layet). */
+.tilbage-btn{font-size:20px;line-height:1;animation:ind .26s cubic-bezier(.22,.61,.36,1) backwards}
+
+@keyframes bump-left{
+  0%  {transform:translateX(0)    scale(1)}
+  25% {transform:translateX(-4px) scale(.86)}
+  55% {transform:translateX(2px)  scale(1.06)}
+  80% {transform:translateX(-1px) scale(.98)}
+  100%{transform:translateX(0)    scale(1)}
+}
+
+.tilbage-btn.bump{animation:bump-left .5s cubic-bezier(.22,.61,.36,1)}
 
 /* Menu-ikonet forvandler sig til en "gaa tilbage"-pil naar menuen er aaben.
    De tre streger er identiske i markup - forskellen er kun deres transform:
@@ -1033,6 +1046,7 @@ dialog h2{
   .byg-liste,.byg-liste.lukker,.byg-liste .ward-item,.byg-slot > *{animation:none}
   .byg-liste.lukker{opacity:0}
   .byg-slot{transition:none}
+  .tilbage-btn,.tilbage-btn.bump{animation:none}
 }
 
 @media (min-width:520px){

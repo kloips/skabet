@@ -299,9 +299,11 @@ skrives ikke som `null`. Gamle poster har ingen `kilde`, og fravær betyder
 (2) stykker. Efter gem lukkes byggeren, båndet bladres hen til det nye sæt,
 og "Sættet er gemt ✓" står i `GEMT_MS` (timer, som de andre lag).
 
-Tilbage-knappen "← Favoritter" sidder i **headeren** ved siden af
-menu-ikonet (`.header-knapper`), ikke inde i visningen som klædeskabets
-"← Alle kategorier". Derfor kalder `visView()` `lukBygger()` ved **ethvert**
+Tilbage-knappen (←, kun et ikon, i samme kasse som menu-knappen) sidder i
+**headeren** ved siden af menu-ikonet (`.header-knapper`), ikke inde i
+visningen som klædeskabets "← Alle kategorier". Den glider ind med `ind`
+og nikker mod venstre ved tryk (`bump-left` via `bump()`); lukningen af
+byggeren venter `BYG_LISTE_LUK_MS`, så nikket når at ses. Derfor kalder `visView()` `lukBygger()` ved **ethvert**
 skift, ikke kun ind til favoritterne — ellers blev knappen stående i
 headeren bag de andre visninger.
 

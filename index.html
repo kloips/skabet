@@ -16,7 +16,7 @@
 <!-- ?v= tvinger Safari til at hente filen paa ny. Bump datoen naar du aendrer
      style.css eller script.js - ellers kan telefonen sidde fast paa en gammel
      udgave, selvom den nye er pushet. -->
-<link rel="stylesheet" href="style.css?v=20260913f">
+<link rel="stylesheet" href="style.css?v=20260913g">
 </head>
 <body>
 
@@ -32,8 +32,9 @@
       <line class="mi-streg mi-bund" x1="4" y1="12" x2="20" y2="12"/>
     </svg>
   </button>
-  <!-- Tilbage fra byggeren. Staar her ved menu-ikonet, ikke inde i visningen. -->
-  <button class="skab-tilbage" id="favTilbage" type="button" hidden>← Favoritter</button>
+  <!-- Tilbage fra byggeren. Staar her ved menu-ikonet, ikke inde i visningen,
+       og er kun et ikon - i samme kasse som menu-knappen og footerens ☆. -->
+  <button class="menu-btn tilbage-btn" id="favTilbage" type="button" hidden aria-label="Tilbage til favoritterne">←</button>
   </div>
   <h1>Skabet</h1>
 </header>
@@ -196,6 +197,6 @@
   </form>
 </dialog>
 
-<script src="script.js?v=20260913f" defer></script>
+<script src="script.js?v=20260913g" defer></script>
 </body>
 </html>

@@ -1105,6 +1105,7 @@ function aabnBygger(){
   bygValg = {};
   bygAktiv = null;
   bygSlots.innerHTML = "";   // frisk raekke, saa intet animerer "ind" fra sidste gang
+  favTilbage.classList.remove("bump");   // ellers spiller nikket i stedet for ind-animationen
   renderBygger();
 }
 
@@ -1217,8 +1218,12 @@ byggerEl.addEventListener("click", e => {
 
 bygBtn.addEventListener("click", aabnBygger);
 favTilbage.addEventListener("click", () => {
-  lukBygger();
-  window.scrollTo(0, 0);
+  bump(favTilbage);
+  // Nikket skal naa at ses foer knappen forsvinder - byggeren lukkes lige efter.
+  setTimeout(() => {
+    lukBygger();
+    window.scrollTo(0, 0);
+  }, BYG_LISTE_LUK_MS);
 });
 
 bygGemBtn.addEventListener("click", () => {
