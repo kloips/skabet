@@ -285,7 +285,8 @@ og er aldrig blevet ændret — gamle gemte sæt virker uden migrering.
 **Byg sæt (manuelle favoritter):** "+ Byg sæt" i footeren under Favorit
 Outfits åbner en bygger som en **tilstand i samme sektion** — samme mønster
 som klædeskabets kategori-side, styret af `bygValg` (`null` = listen). Fem
-slots på en række (overdel, mellemlag, overtøj, underdel, sko; `BYG_SLOTS`),
+slots på en række (jakke, trøje, t-shirt, bukser, sko — samme rækkefølge som
+flat-layet; `BYG_SLOTS`),
 tryk på et slot folder en vandret liste ud nedenunder med alt i kategorien.
 Listen genbruger `.ward-raekke` og `lavKort()`, så den bladrer som
 klædeskabet. Underdel-listen viser både `bottom` og `shorts`; valget gemmes

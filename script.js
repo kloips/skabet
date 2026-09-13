@@ -1078,12 +1078,13 @@ undoBtn.addEventListener("click", () => {
    kilde: "manuel". Slots man ikke fylder, udelades bare fra posten.
    Det er en tilstand i favoritvisningen, ikke et menupunkt.
 ---------------------------------------------------------------*/
+// Samme raekkefoelge som flat-layet og favoritstakken: udefra og ind, oppefra og ned.
 const BYG_SLOTS = [
-  { kat: "top",       navn: "Overdel"   },
-  { kat: "mid",       navn: "Mellemlag" },
-  { kat: "outerwear", navn: "Overtøj"   },
-  { kat: "bottom",    navn: "Underdel"  },   // bukser OG shorts, gemmes under bottom som favoritterne
-  { kat: "shoes",     navn: "Sko"       },
+  { kat: "outerwear", navn: "Jakke"   },
+  { kat: "mid",       navn: "Trøje"   },
+  { kat: "top",       navn: "T-shirt" },
+  { kat: "bottom",    navn: "Bukser"  },   // bukser OG shorts, gemmes under bottom som favoritterne
+  { kat: "shoes",     navn: "Sko"     },
 ];
 const BYG_MIN = 2;        // faerrest stykker et saet kan gemmes med
 const GEMT_MS = 2500;     // hvor laenge "Saettet er gemt" staar
