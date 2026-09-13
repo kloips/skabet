@@ -108,7 +108,7 @@ du webstedsdata i Safari, er alt herunder væk.
 | `skabet-extra-items` | tøj tilføjet via "+"-formularen, inkl. billedet som data-URL | tilføj-formularen |
 | `skabet-history` | **ét** objekt: `{ date, outerwear, mid, top, bottom, shoes }` — det appen sidst **foreslog** | hver shuffle, hvert piletryk, hver favorit der hentes frem |
 | `skabet-log` | array af `{ date, ids: [...] }`, ét sæt pr. dag, trimmet til 90 dage — det jeg **faktisk gik i** | udelukkende ✓-knappen |
-| `skabet-favorites` | array af `{ id, outerwear, mid, top, bottom, shoes }`, manuelt byggede sæt har desuden `kilde: "manuel"` og udelader de slots der er tomme | ☆ i headeren og "Byg sæt" |
+| `skabet-favorites` | array af `{ id, outerwear, mid, top, bottom, shoes }`, manuelt byggede sæt har desuden `kilde: "manuel"` og udelader de slots der er tomme | ☆-knappen og "Byg sæt" |
 | `skabet-lejlighed` | nøglen på den valgte lejlighed, fx `"skole"` | lejlighedsvælgeren |
 
 `skabet-history` og `skabet-log` ligner hinanden, men er to forskellige ting
@@ -278,8 +278,7 @@ Et lille "nik" i pilens retning
 ved klik — `:active` i CSS er ikke pålideligt nok på iOS Safari uden en
 touch-lytter et sted på siden.
 
-**Favoritter:** ☆-knappen i **headeren**, til højre for menu-ikonet, gemmer/
-fjerner det viste sæt i
+**Favoritter:** ☆-knappen i footeren gemmer/fjerner det viste sæt i
 `skabet-favorites`. Formatet er `{ id, outerwear, mid, top, bottom, shoes }`
 og er aldrig blevet ændret — gamle gemte sæt virker uden migrering.
 
@@ -298,9 +297,13 @@ Sættet gemmes i `skabet-favorites` i samme form som et gemt forslag, plus
 skrives ikke som `null`. Gamle poster har ingen `kilde`, og fravær betyder
 "gemt forslag"; ingen migrering. "Gem sæt" er `disabled` under `BYG_MIN`
 (2) stykker. Efter gem lukkes byggeren, båndet bladres hen til det nye sæt,
-og "Sættet er gemt ✓" står i `GEMT_MS` (timer, som de andre lag). Man
-lander altid på listen når man går ind fra menuen — `visView()` kalder
-`lukBygger()`.
+og "Sættet er gemt ✓" står i `GEMT_MS` (timer, som de andre lag).
+
+Tilbage-knappen "← Favoritter" sidder i **headeren** ved siden af
+menu-ikonet (`.header-knapper`), ikke inde i visningen som klædeskabets
+"← Alle kategorier". Derfor kalder `visView()` `lukBygger()` ved **ethvert**
+skift, ikke kun ind til favoritterne — ellers blev knappen stående i
+headeren bag de andre visninger.
 
 Det hænger sammen med "manglende tøj" nedenfor: `renderFavorites()` skelner
 mellem en nøgle der **mangler** (bevidst tomt slot, stiplet felt, ingen
@@ -382,17 +385,17 @@ skiftes ved at sætte `hidden` på de øvrige. Der er ingen URL pr. visning,
 og valget huskes ikke: appen starter altid på "Vælg Outfit", fordi det er
 det man skal bruge om morgenen.
 
-Footeren hører til visningen: "Vælg Outfit" har shuffle + ✓ + ↺ (☆ sidder i
-headeren og skjules af `visView()` i de to andre visninger), "Mit
+Footeren hører til visningen: "Vælg Outfit" har shuffle + ☆ + ✓ + ↺, "Mit
 klædeskab" har "+ Tilføj tøj" i begge tilstande, og "Favorit Outfits" har
 "+ Byg sæt", som afløses af "Gem sæt" mens byggeren er åben. Grupperne står
 som `.footer-group` med et `data-footer`-attribut der matcher visningens
 navn.
 
-`.ghost` har `padding-inline:12px` og ikke 16 fra dengang der var fire
-knapper på "Vælg Outfit" — ellers blev "Giv mig et sæt" presset over to
-linjer. ☆ er siden flyttet til headeren, så der er luft nu, men de 12px er
-beholdt: de gør ingen skade, og "+ Byg sæt"/"Gem sæt" nyder godt af dem.
+De fire knapper på "Vælg Outfit" er grunden til at `.ghost` har
+`padding-inline:12px` og ikke 16 — ellers blev "Giv mig et sæt" presset over
+to linjer. Fra 344px skærmbredde og op står alt på én linje; en 320px skærm
+(iPhone SE fra 2016) bryder stadig teksten. Skæres der mere, bliver
+knapperne under 40px brede at ramme.
 
 **Mit klædeskab** har **to tilstande i samme sektion** — en oversigt og en
 kategori-side — styret af variablen `skabKategori` (`null` = oversigt).

@@ -16,7 +16,7 @@
 <!-- ?v= tvinger Safari til at hente filen paa ny. Bump datoen naar du aendrer
      style.css eller script.js - ellers kan telefonen sidde fast paa en gammel
      udgave, selvom den nye er pushet. -->
-<link rel="stylesheet" href="style.css?v=20260913e">
+<link rel="stylesheet" href="style.css?v=20260913f">
 </head>
 <body>
 
@@ -32,8 +32,8 @@
       <line class="mi-streg mi-bund" x1="4" y1="12" x2="20" y2="12"/>
     </svg>
   </button>
-  <!-- Favorit-knappen hoerer til Vaelg Outfit og skjules i de andre visninger (visView). -->
-  <button class="menu-btn fav-btn" id="favorite" type="button" aria-pressed="false" aria-label="Gem som favorit">☆</button>
+  <!-- Tilbage fra byggeren. Staar her ved menu-ikonet, ikke inde i visningen. -->
+  <button class="skab-tilbage" id="favTilbage" type="button" hidden>← Favoritter</button>
   </div>
   <h1>Skabet</h1>
 </header>
@@ -119,7 +119,6 @@
 <section class="view" id="view-favoritter" hidden>
   <!-- To tilstande i samme sektion: listen og byggeren ("Byg saet"). Samme
        moenster som klaedeskabets kategori-side - ikke et fjerde menupunkt. -->
-  <button class="skab-tilbage" id="favTilbage" type="button" hidden>← Favoritter</button>
   <h2 class="view-title" id="favTitel">Favorit Outfits</h2>
   <p class="tom-besked" id="favoritesEmpty" hidden>Du har ingen gemte sæt endnu. Tryk på ☆ under et outfit for at gemme det, eller byg et selv.</p>
   <p class="fav-gemt" id="favGemt" hidden>Sættet er gemt ✓</p>
@@ -147,6 +146,7 @@
   <!-- Knapperne skifter med visningen - se visView() i script.js. -->
   <div class="footer-group" data-footer="outfit">
     <button class="primary" id="shuffle">Giv mig et sæt</button>
+    <button class="ghost" id="favorite" type="button" aria-pressed="false" aria-label="Gem som favorit">☆</button>
     <button class="ghost" id="woreBtn" type="button" aria-pressed="false" aria-label="Det tog jeg paa i dag">✓</button>
     <!-- disabled staar her og ikke kun i JS, saa knappen ogsaa er slaaet fra
          i det oejeblik siden vises, foer vejret er hentet og shuffle er kaldt. -->
@@ -196,6 +196,6 @@
   </form>
 </dialog>
 
-<script src="script.js?v=20260913e" defer></script>
+<script src="script.js?v=20260913f" defer></script>
 </body>
 </html>

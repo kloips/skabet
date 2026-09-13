@@ -134,12 +134,9 @@ main{flex:1;padding:0 20px 20px}
   color:var(--ink);
 }
 
-.header-knapper{display:flex;gap:8px}
-
-/* Favorit-stjernen ved siden af menu-ikonet. Samme kasse som menu-knappen,
-   fyldt groen naar det viste saet er gemt. */
-.fav-btn{font-size:21px;line-height:1;transition:background .15s ease, color .15s ease, border-color .15s ease}
-.fav-btn[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+/* Menu-ikonet og byggerens tilbage-knap side om side. */
+.header-knapper{display:flex;align-items:center;gap:12px}
+.header-knapper .skab-tilbage{margin:0}
 
 /* Menu-ikonet forvandler sig til en "gaa tilbage"-pil naar menuen er aaben.
    De tre streger er identiske i markup - forskellen er kun deres transform:

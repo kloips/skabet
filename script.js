@@ -698,7 +698,6 @@ function visView(navn){
     if (vis) harKnapper = true;
   });
   footerEl.hidden = !harKnapper;
-  favoriteBtn.hidden = navn !== "outfit";   // stjernen i headeren gaelder kun det viste saet
 
   // Man lander altid paa oversigten, aldrig paa den kategori man saa sidst.
   if (navn === "skab"){
@@ -706,8 +705,10 @@ function visView(navn){
     nulstilFiltre();
     renderWardrobe();
   }
-  // Samme princip for favoritterne: man lander paa listen, ikke i byggeren.
-  if (navn === "favoritter") lukBygger();
+  // Byggeren lukkes ved ethvert skift - dels lander man paa listen, ikke i
+  // byggeren, dels sidder dens tilbage-knap i headeren og ville ellers blive
+  // staaende bag de andre visninger.
+  lukBygger();
   lukMenu();
   window.scrollTo(0, 0);
 }
