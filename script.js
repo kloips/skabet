@@ -206,6 +206,17 @@ const footerEl      = document.getElementById("footer");
 const wardrobeEl    = document.getElementById("wardrobe");
 const skabTitel     = document.getElementById("skabTitel");
 const skabTilbage   = document.getElementById("skabTilbage");
+const favTilbage    = document.getElementById("favTilbage");
+const favTitel      = document.getElementById("favTitel");
+const favGemt       = document.getElementById("favGemt");
+const byggerEl      = document.getElementById("bygger");
+const bygSlots      = document.getElementById("bygSlots");
+const bygListe      = document.getElementById("bygListe");
+const bygListeTitel = document.getElementById("bygListeTitel");
+const bygListeRaekke= document.getElementById("bygListeRaekke");
+const bygToem       = document.getElementById("bygToem");
+const bygBtn        = document.getElementById("bygBtn");
+const bygGemBtn     = document.getElementById("bygGemBtn");
 const addDialog     = document.getElementById("addDialog");
 const addForm       = document.getElementById("addForm");
 const addPhoto      = document.getElementById("addPhoto");
@@ -417,8 +428,10 @@ function renderFavorites(){
   favorites.forEach((record, i) => {
     // Et gemt id kan pege paa toej der ikke findes mere. Pladsen bliver staaende
     // som et tomt felt, og saettet markeres - det kan stadig hentes frem.
+    // Et slot UDEN noegle er bevidst tomt (manuelt bygget saet) og skal ikke
+    // udloese advarslen - kun en noegle hvis id ikke findes taeller som manglende.
     const stykker = FAV_SLOTS.map(cat => items.find(item => item.id === record[cat]) || null);
-    const mangler = stykker.some(item => !item);
+    const mangler = FAV_SLOTS.some((cat, i) => record[cat] !== undefined && !stykker[i]);
 
     const side = document.createElement("article");
     side.className = "fav-side";
@@ -677,7 +690,7 @@ function visView(navn){
     b.setAttribute("aria-current", String(b.dataset.view === navn));
   });
 
-  // Footeren hoerer til visningen - favoritlisten har ingen knapper.
+  // Footeren hoerer til visningen.
   let harKnapper = false;
   document.querySelectorAll(".footer-group").forEach(g => {
     const vis = g.dataset.footer === navn;
@@ -692,6 +705,8 @@ function visView(navn){
     nulstilFiltre();
     renderWardrobe();
   }
+  // Samme princip for favoritterne: man lander paa listen, ikke i byggeren.
+  if (navn === "favoritter") lukBygger();
   lukMenu();
   window.scrollTo(0, 0);
 }
@@ -1055,6 +1070,127 @@ undoBtn.addEventListener("click", () => {
   saveHistory(current);          // saa gaarsdags-sammenligningen matcher skaermen
   updateFavoriteButton();
   updateWoreButton();
+});
+
+/*---------------------------------------------------------------
+   Byg saet: et outfit sammensat manuelt, slot for slot. Gemmes i
+   skabet-favorites i praecis samme form som et gemt forslag, plus
+   kilde: "manuel". Slots man ikke fylder, udelades bare fra posten.
+   Det er en tilstand i favoritvisningen, ikke et menupunkt.
+---------------------------------------------------------------*/
+const BYG_SLOTS = [
+  { kat: "top",       navn: "Overdel"   },
+  { kat: "mid",       navn: "Mellemlag" },
+  { kat: "outerwear", navn: "Overtøj"   },
+  { kat: "bottom",    navn: "Underdel"  },   // bukser OG shorts, gemmes under bottom som favoritterne
+  { kat: "shoes",     navn: "Sko"       },
+];
+const BYG_MIN = 2;        // faerrest stykker et saet kan gemmes med
+const GEMT_MS = 2500;     // hvor laenge "Saettet er gemt" staar
+let bygValg  = null;      // null = listen vises, ellers { top: id, ... } for byggeren
+let bygAktiv = null;      // det slot hvis liste er foldet ud
+let gemtTimer = null;
+
+function aabnBygger(){
+  bygValg = {};
+  bygAktiv = null;
+  renderBygger();
+}
+
+function lukBygger(){
+  bygValg = null;
+  bygAktiv = null;
+  renderBygger();
+  renderFavorites();      // saetter favoritesEmpty rigtigt igen
+}
+
+function renderBygger(){
+  const aaben = bygValg !== null;
+  favTilbage.hidden = !aaben;
+  favTitel.textContent = aaben ? "Byg et sæt" : "Favorit Outfits";
+  favoritesList.hidden = aaben;
+  if (aaben) favoritesEmpty.hidden = true;
+  byggerEl.hidden = !aaben;
+  bygBtn.hidden = aaben;
+  bygGemBtn.hidden = !aaben;
+  if (!aaben) return;
+
+  bygGemBtn.disabled = Object.keys(bygValg).length < BYG_MIN;
+
+  bygSlots.innerHTML = BYG_SLOTS.map(({ kat, navn }) => {
+    const item = items.find(i => i.id === bygValg[kat]);
+    return `
+      <div class="byg-plads">
+        <button class="byg-slot${item ? " fyldt" : ""}" type="button" data-slot="${kat}"
+                aria-pressed="${bygAktiv === kat}" aria-label="${navn}">
+          ${item ? `<img src="${item.image}" alt="">` : `<span aria-hidden="true">+</span>`}
+        </button>
+        <span class="byg-navn">${navn}</span>
+      </div>`;
+  }).join("");
+
+  bygListe.hidden = bygAktiv === null;
+  if (bygAktiv === null) return;
+
+  const slot = BYG_SLOTS.find(s => s.kat === bygAktiv);
+  bygListeTitel.textContent = "Vælg " + slot.navn.toLowerCase();
+  bygToem.hidden = bygValg[bygAktiv] === undefined;
+
+  const kats = bygAktiv === "bottom" ? ["bottom", "shorts"] : [bygAktiv];
+  const liste = sorterEfterBrug(items.filter(i => kats.includes(i.category)), baaretAntal());
+  bygListeRaekke.innerHTML = "";
+  liste.forEach(item => {
+    const kort = lavKort(item, false);
+    kort.dataset.vaelg = item.id;
+    if (item.id === bygValg[bygAktiv]) kort.classList.add("valgt");
+    bygListeRaekke.append(kort);
+  });
+  bygListeRaekke.scrollLeft = 0;
+}
+
+byggerEl.addEventListener("click", e => {
+  const slot = e.target.closest("[data-slot]");
+  if (slot){
+    // Tryk paa det slot der allerede er aabent, folder listen ind igen.
+    bygAktiv = bygAktiv === slot.dataset.slot ? null : slot.dataset.slot;
+    renderBygger();
+    return;
+  }
+
+  if (e.target.closest("#bygToem")){
+    delete bygValg[bygAktiv];
+    bygAktiv = null;
+    renderBygger();
+    return;
+  }
+
+  const kort = e.target.closest("[data-vaelg]");
+  if (kort){
+    // id'er er tal for det hardcodede og tekst ("x...") for det selvtilfoejede
+    const item = items.find(i => String(i.id) === kort.dataset.vaelg);
+    if (item) bygValg[bygAktiv] = item.id;
+    bygAktiv = null;
+    renderBygger();
+  }
+});
+
+bygBtn.addEventListener("click", aabnBygger);
+favTilbage.addEventListener("click", () => {
+  lukBygger();
+  window.scrollTo(0, 0);
+});
+
+bygGemBtn.addEventListener("click", () => {
+  if (Object.keys(bygValg).length < BYG_MIN) return;
+  const favorites = loadFavorites();
+  favorites.push({ id: Date.now(), kilde: "manuel", ...bygValg });
+  saveFavorites(favorites);
+  lukBygger();                                            // rydder byggeren og viser listen
+  updateFavoriteButton();
+  favoritesList.scrollLeft = favoritesList.scrollWidth;   // bladr hen til det nye saet
+  favGemt.hidden = false;
+  clearTimeout(gemtTimer);
+  gemtTimer = setTimeout(() => { favGemt.hidden = true; }, GEMT_MS);
 });
 
 favoritesList.addEventListener("click", e => {

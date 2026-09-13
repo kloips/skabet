@@ -742,6 +742,93 @@ main{flex:1;padding:0 20px 20px}
   margin-top:14px;
 }
 
+/* Bekraeftelse efter "Gem saet". Skjules igen af en timer (GEMT_MS). */
+.fav-gemt{
+  font-family:var(--font-label);
+  font-size:13px;
+  color:var(--accent);
+  margin:0 2px 8px;
+}
+
+/* Byg saet: fem slots paa en raekke. Bredden er en femtedel af pladsen, ikke
+   et pixeltal, saa raekken altid passer paa en linje. Slottet er en knap - et
+   tryk aabner listen for kategorien nedenunder. */
+.byg-raekke{
+  display:flex;
+  gap:6px;
+  margin-bottom:16px;
+}
+
+.byg-plads{
+  flex:1 1 0;
+  min-width:0;
+  text-align:center;
+}
+
+.byg-slot{
+  display:block;
+  position:relative;
+  width:100%;
+  aspect-ratio:1;
+  padding:0;
+  border:1px dashed var(--line);
+  border-radius:10px;
+  background:var(--card);   /* hvid, saa billedets hvide baggrund gaar i et */
+  color:var(--ink-soft);
+  font-size:18px;
+  font-weight:400;
+  overflow:hidden;
+}
+
+.byg-slot.fyldt{border-style:solid}
+
+.byg-slot[aria-pressed="true"]{
+  border-color:var(--accent);
+  box-shadow:0 0 0 1px var(--accent);
+}
+
+.byg-slot img{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  padding:4px;
+  object-fit:contain;
+}
+
+.byg-navn{
+  display:block;
+  font-size:10px;
+  line-height:1.3;
+  color:var(--ink-soft);
+  margin-top:4px;
+}
+
+.byg-liste-hoved{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin:0 2px 6px;
+}
+
+/* Samme udseende som kategorioverskrifterne i klaedeskabet. */
+.byg-liste-titel{
+  margin:0;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--ink-soft);
+}
+
+.byg-toem{padding:6px 12px;font-size:13px}
+
+/* Det stykke der allerede sidder i slottet, markeres i listen. */
+.ward-item.valgt .ward-billede{
+  border-color:var(--accent);
+  box-shadow:0 0 0 1px var(--accent);
+}
+
 footer{
   position:sticky;
   bottom:0;
@@ -773,7 +860,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
    knapper - ellers blev "Giv mig et sæt" presset over to linjer paa smalle
    telefoner. Skaerer du mere, bliver knapperne under 40px brede at ramme. */
 .ghost{background:var(--card);border-color:var(--line);color:var(--ink);padding-inline:12px}
-.ghost:disabled{opacity:.35;cursor:default}
+.ghost:disabled,.primary:disabled{opacity:.35;cursor:default}
 
 /* Fortryd-knappen: kun selve tegnet drejer, ikke hele knappen. Mod uret,
    samme vej som pilen i tegnet peger. Trigges fra JS med bump(), praecis

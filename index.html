@@ -16,7 +16,7 @@
 <!-- ?v= tvinger Safari til at hente filen paa ny. Bump datoen naar du aendrer
      style.css eller script.js - ellers kan telefonen sidde fast paa en gammel
      udgave, selvom den nye er pushet. -->
-<link rel="stylesheet" href="style.css?v=20260912a">
+<link rel="stylesheet" href="style.css?v=20260913a">
 </head>
 <body>
 
@@ -113,11 +113,28 @@
 
 <!-- Favorit Outfits: gemte saet, tryk henter et frem paa Vaelg Outfit. -->
 <section class="view" id="view-favoritter" hidden>
-  <h2 class="view-title">Favorit Outfits</h2>
-  <p class="tom-besked" id="favoritesEmpty" hidden>Du har ingen gemte sæt endnu. Tryk på ☆ under et outfit for at gemme det.</p>
+  <!-- To tilstande i samme sektion: listen og byggeren ("Byg saet"). Samme
+       moenster som klaedeskabets kategori-side - ikke et fjerde menupunkt. -->
+  <button class="skab-tilbage" id="favTilbage" type="button" hidden>← Favoritter</button>
+  <h2 class="view-title" id="favTitel">Favorit Outfits</h2>
+  <p class="tom-besked" id="favoritesEmpty" hidden>Du har ingen gemte sæt endnu. Tryk på ☆ under et outfit for at gemme det, eller byg et selv.</p>
+  <p class="fav-gemt" id="favGemt" hidden>Sættet er gemt ✓</p>
   <!-- Et saet ad gangen, bladres vandret med scroll-snap. Egne klasser og
        hoejder - flat-layets .lay/.slot/.garment maa ikke genbruges her. -->
   <div class="fav-baand" id="favoritesList"></div>
+
+  <!-- Byggeren: en raekke slots, og under den listen for det slot der er valgt.
+       Listen genbruger klaedeskabets .ward-raekke, saa den bladrer paa samme maade. -->
+  <div id="bygger" hidden>
+    <div class="byg-raekke" id="bygSlots"></div>
+    <div class="byg-liste" id="bygListe" hidden>
+      <div class="byg-liste-hoved">
+        <h3 class="byg-liste-titel" id="bygListeTitel"></h3>
+        <button class="ghost byg-toem" id="bygToem" type="button" hidden>Tøm</button>
+      </div>
+      <div class="ward-raekke" id="bygListeRaekke"></div>
+    </div>
+  </div>
 </section>
 
 </main>
@@ -134,6 +151,12 @@
   </div>
   <div class="footer-group" data-footer="skab" hidden>
     <button class="primary" id="addItemBtn" type="button">+ Tilføj tøj</button>
+  </div>
+  <div class="footer-group" data-footer="favoritter" hidden>
+    <button class="primary" id="bygBtn" type="button">+ Byg sæt</button>
+    <!-- Gem-knappen afloeser Byg-knappen mens byggeren er aaben. disabled staar
+         i markup'et, saa den aldrig er aktiv foer JS har talt stykkerne. -->
+    <button class="primary" id="bygGemBtn" type="button" hidden disabled>Gem sæt</button>
   </div>
 </footer>
 
@@ -170,6 +193,6 @@
   </form>
 </dialog>
 
-<script src="script.js?v=20260912a" defer></script>
+<script src="script.js?v=20260913a" defer></script>
 </body>
 </html>
