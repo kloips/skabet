@@ -835,12 +835,13 @@ function renderOversigt(){
   wardrobeEl.innerHTML = "";
 
   const antal = baaretAntal();
-  Object.keys(KAT_NAVNE).forEach(kat => {
+  Object.keys(KAT_NAVNE).forEach((kat, n) => {
     const iKat = sorterEfterBrug(items.filter(i => i.category === kat), antal);
     if (!iKat.length) return;     // tomme kategorier springes over
 
     const gruppe = document.createElement("section");
     gruppe.className = "ward-gruppe";
+    gruppe.style.setProperty("--i", n);   // forskudt ind-animation, se style.css
     gruppe.innerHTML = `
       <h3 class="ward-titel">
         <button class="ward-titel-knap" type="button" data-kat="${kat}">
@@ -901,7 +902,11 @@ function renderKategoriIndhold(){
 
   const grid = document.createElement("div");
   grid.className = "ward-grid";
-  liste.forEach(item => grid.append(lavKort(item, true)));
+  liste.forEach((item, n) => {
+    const kort = lavKort(item, true);
+    kort.style.setProperty("--i", Math.min(n, 8));   // forskudt ind-animation, hoejst 8 trin
+    grid.append(kort);
+  });
   holder.append(grid);
 }
 
@@ -1095,6 +1100,7 @@ let gemtTimer = null;
 function aabnBygger(){
   bygValg = {};
   bygAktiv = null;
+  bygSlots.innerHTML = "";   // frisk raekke, saa intet animerer "ind" fra sidste gang
   renderBygger();
 }
 
@@ -1118,17 +1124,26 @@ function renderBygger(){
 
   bygGemBtn.disabled = Object.keys(bygValg).length < BYG_MIN;
 
-  bygSlots.innerHTML = BYG_SLOTS.map(({ kat, navn }) => {
-    const item = items.find(i => i.id === bygValg[kat]);
-    return `
+  // Slottene bygges een gang og opdateres derefter paa stedet. Saa faar kun
+  // det slot der faktisk skiftede indhold, sin ind-animation, og ringen om
+  // det aktive slot kan glide i stedet for at springe.
+  if (!bygSlots.children.length){
+    bygSlots.innerHTML = BYG_SLOTS.map(({ kat, navn }) => `
       <div class="byg-plads">
-        <button class="byg-slot${item ? " fyldt" : ""}" type="button" data-slot="${kat}"
-                aria-pressed="${bygAktiv === kat}" aria-label="${navn}">
-          ${item ? `<img src="${item.image}" alt="">` : `<span aria-hidden="true">+</span>`}
-        </button>
+        <button class="byg-slot" type="button" data-slot="${kat}" aria-pressed="false" aria-label="${navn}"></button>
         <span class="byg-navn">${navn}</span>
-      </div>`;
-  }).join("");
+      </div>`).join("");
+  }
+  BYG_SLOTS.forEach(({ kat }) => {
+    const knap = bygSlots.querySelector(`[data-slot="${kat}"]`);
+    const item = items.find(i => i.id === bygValg[kat]);
+    knap.setAttribute("aria-pressed", String(bygAktiv === kat));
+    knap.classList.toggle("fyldt", !!item);
+    const id = item ? String(item.id) : "";
+    if (knap.dataset.id === id) return;   // uaendret - roer ikke DOM'en
+    knap.dataset.id = id;
+    knap.innerHTML = item ? `<img src="${item.image}" alt="">` : `<span aria-hidden="true">+</span>`;
+  });
 
   bygListe.hidden = bygAktiv === null;
   if (bygAktiv === null) return;
@@ -1140,9 +1155,10 @@ function renderBygger(){
   const kats = bygAktiv === "bottom" ? ["bottom", "shorts"] : [bygAktiv];
   const liste = sorterEfterBrug(items.filter(i => kats.includes(i.category)), baaretAntal());
   bygListeRaekke.innerHTML = "";
-  liste.forEach(item => {
+  liste.forEach((item, n) => {
     const kort = lavKort(item, false);
     kort.dataset.vaelg = item.id;
+    kort.style.setProperty("--i", Math.min(n, 8));   // forskudt ind-animation, hoejst 8 trin
     if (item.id === bygValg[bygAktiv]) kort.classList.add("valgt");
     bygListeRaekke.append(kort);
   });

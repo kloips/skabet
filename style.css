@@ -236,6 +236,27 @@ main{flex:1;padding:0 20px 20px}
 
 .tom-besked{color:var(--ink-soft);font-size:14px;margin:0 2px}
 
+/* Faelles ind-animation: alt der dukker op, glider et par pixel op og fader
+   ind. Ease-out (hurtig start, bloed landing) - ease-in er forbeholdt det der
+   lukker, jf. menuen og zoomen. backwards, ikke both: naar animationen er
+   faerdig, skal der ikke sidde en transform tilbage paa elementet. */
+@keyframes ind{
+  from{opacity:0; transform:translateY(8px)}
+  to  {opacity:1; transform:none}
+}
+
+/* Koerer hver gang hidden fjernes, dvs. ved hvert skift mellem visninger. */
+.view:not([hidden]){animation:ind .26s cubic-bezier(.22,.61,.36,1) backwards}
+
+/* Lister daler forskudt ind. --i saettes fra JS (hoejst 8), saa en lang liste
+   ikke venter paa sig selv. */
+.ward-gruppe,
+.ward-grid .ward-item,
+.byg-liste .ward-item{
+  animation:ind .3s cubic-bezier(.22,.61,.36,1) backwards;
+  animation-delay:calc(var(--i,0) * 35ms);
+}
+
 /* Mit klaedeskab: en firkantet rude pr. genstand, kategori for kategori. */
 .ward-gruppe{margin-bottom:14px}
 
@@ -778,7 +799,17 @@ main{flex:1;padding:0 20px 20px}
   font-size:18px;
   font-weight:400;
   overflow:hidden;
+  transition:border-color .15s ease, box-shadow .15s ease;
 }
+
+/* Det valgte stykke popper ind i slottet. Rammer kun nyt indhold, fordi
+   renderBygger() lader uaendrede slots staa i fred i DOM'en. */
+@keyframes byg-fyld{
+  from{opacity:0; transform:scale(.85)}
+  to  {opacity:1; transform:none}
+}
+
+.byg-slot > *{animation:byg-fyld .3s cubic-bezier(.22,.61,.36,1) backwards}
 
 .byg-slot.fyldt{border-style:solid}
 
@@ -803,6 +834,8 @@ main{flex:1;padding:0 20px 20px}
   color:var(--ink-soft);
   margin-top:4px;
 }
+
+.byg-liste{animation:ind .22s cubic-bezier(.22,.61,.36,1) backwards}
 
 .byg-liste-hoved{
   display:flex;
@@ -978,6 +1011,9 @@ dialog h2{
   .zoom.aaben,.zoom.lukker,.zoom.aaben .zoom-billede,
   #undoBtn.bump .undo-ikon{animation:none}
   .zoom.lukker{opacity:0}
+  .view,.ward-gruppe,.ward-grid .ward-item,.byg-liste,.byg-liste .ward-item,
+  .byg-slot > *{animation:none}
+  .byg-slot{transition:none}
 }
 
 @media (min-width:520px){

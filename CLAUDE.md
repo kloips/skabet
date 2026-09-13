@@ -606,6 +606,20 @@ den laves på sekunder ud fra `klar/`.
 - Knap-feedback trigges fra JS via `bump()`, ikke via `:active` — det sidste
   er ikke pålideligt på iOS Safari. Funktionen er generisk: den bruges både
   af pilene i flat-layet og af fortryd-knappens rotation.
+- **Ting der kommer ind, bruger ease-out; ting der lukker, ease-in.**
+  Kurven til alt der åbner er `cubic-bezier(.22,.61,.36,1)` (menu, vælger,
+  zoom, visninger, lister). Ease-in på en indgang føles tøvende og ender
+  brat — brug det ikke der. Der er én fælles `@keyframes ind` (fade + glid
+  8px op) til visningsskift (`.view:not([hidden])`), klædeskabets grupper og
+  ruder og byggerens liste; lister daler forskudt ind via `--i`, som sættes
+  inline fra JS og er begrænset til 8, så en lang liste ikke venter på sig
+  selv. `animation-fill-mode` er `backwards`, ikke `both` — ellers bliver
+  der siddende en transform på elementet, som gør det til containing block
+  for `position:fixed`.
+- Byggerens slots opdateres **på stedet** i `renderBygger()`, ikke ved at
+  genbygge `innerHTML`. Det er det der gør at kun det slot der skiftede
+  indhold, får sin `byg-fyld`-animation, og at ringen om det aktive slot kan
+  glide. Bygger du dem om hver gang, animerer alle fem ved hvert tryk.
 - Alle animationer skal også være slået fra under
   `@media (prefers-reduced-motion:reduce)`. Tilføjer du en ny, tilføj den
   også der.
