@@ -284,35 +284,46 @@ og er aldrig blevet ændret — gamle gemte sæt virker uden migrering.
 
 **Byg sæt (manuelle favoritter):** "+ Byg sæt" i footeren under Favorit
 Outfits åbner en bygger som en **tilstand i samme sektion** — samme mønster
-som klædeskabets kategori-side, styret af `bygValg` (`null` = listen). Fem
-slots **stablet lodret** i et hvidt kort (`.byg-stak`) med flat-layets
-`--h-*`-højder, så det ligner "Vælg Outfit" (jakke, trøje, t-shirt, bukser,
-sko; `BYG_SLOTS`). Tryk på et slot folder en vandret liste ud **lige under
-det slot** — `renderBygger()` flytter `#bygListe` derhen med `.after()`, og
-flytningen genstarter samtidig ind-animationen. Listen genbruger
-`.ward-raekke` og `lavKort()`, så den bladrer som klædeskabet. Højderne er
-faste (ingen proportional skrumpning som i `.fav-stak`), fordi kortet skal
-kunne vokse med listen; siden scroller i stedet.
+som klædeskabets kategori-side, styret af `bygValg` (`null` = listen vises,
+ellers `{ top: id, ... }`). Det er bevidst ikke et fjerde menupunkt.
 
-Fælden: `aabnBygger()` tømmer `#bygSlots` med `innerHTML = ""`. Listen kan
-stå inde i stakken fra sidst, så den flyttes ud til `#bygger` først — ellers
-bliver den slettet. Underdel-listen viser både `bottom` og `shorts`; valget gemmes
-under `bottom`, præcis som ☆ gør.
+*Udseende.* Fem slots stablet lodret i et hvidt kort (`.byg-stak`) med
+flat-layets `--h-*`-højder, så det ligner "Vælg Outfit". Rækkefølgen er
+jakke, trøje, t-shirt, bukser, sko (`BYG_SLOTS`, samme som flat-layet).
+Et tomt slot er et stiplet felt med "+ Jakke"; et fyldt viser kun billedet
+uden ramme. Højderne er faste — ingen proportional skrumpning som i
+`.fav-stak` — fordi kortet skal kunne vokse når listen folder ud; siden
+scroller i stedet.
 
-Sættet gemmes i `skabet-favorites` i samme form som et gemt forslag, plus
-`kilde: "manuel"`. Slots man ikke fylder, **udelades** fra posten — de
-skrives ikke som `null`. Gamle poster har ingen `kilde`, og fravær betyder
-"gemt forslag"; ingen migrering. "Gem sæt" er `disabled` under `BYG_MIN`
-(2) stykker. Efter gem lukkes byggeren, båndet bladres hen til det nye sæt,
-og "Sættet er gemt ✓" står i `GEMT_MS` (timer, som de andre lag).
+*Vælge.* Tryk på et slot folder en vandret liste ud **lige under det slot**:
+`renderBygger()` flytter `#bygListe` derhen med `.after()`, og flytningen
+genstarter samtidig ind-animationen. Listen genbruger `.ward-raekke` og
+`lavKort()`, så den bladrer som klædeskabet; det stykke der allerede sidder
+i slottet, er markeret (`.valgt`), og "Tøm" i listens overskrift tømmer
+slottet. Tryk på det åbne slot igen folder listen ind. Bukser-listen viser
+både `bottom` og `shorts`; valget gemmes under `bottom`, præcis som ☆ gør.
 
-Tilbage-knappen (←, kun et ikon, i samme kasse som menu-knappen) sidder i
+Slottene bygges én gang og opdateres derefter **på stedet** — kun det slot
+hvis indhold skiftede, får nyt indhold og dermed sin `byg-fyld`-animation.
+Fælden: `aabnBygger()` tømmer `#bygSlots` med `innerHTML = ""`, og listen
+kan stå inde i stakken fra sidst. Den flyttes ud til `#bygger` først —
+ellers bliver den slettet.
+
+*Gemme.* "Gem sæt" afløser "+ Byg sæt" i footeren og er `disabled` under
+`BYG_MIN` (2) stykker. Sættet gemmes i `skabet-favorites` i samme form som
+et gemt forslag, plus `kilde: "manuel"`. Slots man ikke fylder, **udelades**
+fra posten — de skrives ikke som `null`. Gamle poster har ingen `kilde`, og
+fravær betyder "gemt forslag"; ingen migrering. Efter gem lukkes byggeren,
+båndet bladres hen til det nye sæt, og "Sættet er gemt ✓" står i `GEMT_MS`
+(timer, som de andre lag).
+
+*Tilbage.* Knappen (←, kun et ikon, i samme kasse som menu-knappen) sidder i
 **headeren** ved siden af menu-ikonet (`.header-knapper`), ikke inde i
-visningen som klædeskabets "← Alle kategorier". Den glider ind med `ind`
-og nikker mod venstre ved tryk (`bump-left` via `bump()`); lukningen af
-byggeren venter `BYG_LISTE_LUK_MS`, så nikket når at ses. Derfor kalder `visView()` `lukBygger()` ved **ethvert**
-skift, ikke kun ind til favoritterne — ellers blev knappen stående i
-headeren bag de andre visninger.
+visningen som klædeskabets "← Alle kategorier". Den glider ind med `ind` og
+nikker mod venstre ved tryk (`bump-left` via `bump()`); lukningen venter
+`BYG_LISTE_LUK_MS`, så nikket når at ses. Fordi knappen står i headeren,
+kalder `visView()` `lukBygger()` ved **ethvert** skift, ikke kun ind til
+favoritterne — ellers blev den stående bag de andre visninger.
 
 Det hænger sammen med "manglende tøj" nedenfor: `renderFavorites()` skelner
 mellem en nøgle der **mangler** (bevidst tomt slot, stiplet felt, ingen
@@ -618,8 +629,8 @@ den laves på sekunder ud fra `klar/`.
   animationer fra i systemet, og laget så aldrig ville blive skjult. Ændrer
   du varigheden i CSS, skal konstanten følge med.
 - Knap-feedback trigges fra JS via `bump()`, ikke via `:active` — det sidste
-  er ikke pålideligt på iOS Safari. Funktionen er generisk: den bruges både
-  af pilene i flat-layet og af fortryd-knappens rotation.
+  er ikke pålideligt på iOS Safari. Funktionen er generisk: den bruges af
+  pilene i flat-layet, fortryd-knappens rotation og byggerens tilbage-pil.
 - **Ting der kommer ind, bruger ease-out; ting der lukker, ease-in.**
   Kurven til alt der åbner er `cubic-bezier(.22,.61,.36,1)` (menu, vælger,
   zoom, visninger, lister). Ease-in på en indgang føles tøvende og ender
