@@ -596,11 +596,14 @@ main{flex:1;padding:0 20px 20px}
   /* Ingen drop-shadow: billederne har hvid baggrund i stedet for at vaere
      fritlagte, saa skyggen ville falde langs den firkantede ramme i stedet
      for langs toejets silhuet. */
-  transition:opacity .32s ease;
+  /* Krydsblendingen: det nye billede fader ind og vokser ganske lidt, det
+     gamle fader ud og krymper lidt - saa skiftet foeles som en bevaegelse,
+     ikke et blink. Varigheden skal matche SWAP_FADE_MS i script.js. */
+  transition:opacity .55s cubic-bezier(.22,.61,.36,1), transform .55s cubic-bezier(.22,.61,.36,1);
 }
 
-.slot img.garment.entering,
-.slot img.garment.leaving{opacity:0}
+.slot img.garment.entering{opacity:0; transform:translate(-50%,-50%) scale(.94)}
+.slot img.garment.leaving {opacity:0; transform:translate(-50%,-50%) scale(1.03)}
 
 .slot.empty{border:1px dashed var(--line);border-radius:10px}
 

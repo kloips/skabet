@@ -477,7 +477,12 @@ ikke har noget slot i flat-layet.
 ligge oveni hinanden i samme grid-celle (`grid-area:1/1` på `.garment`)
 og krydsblender dem samtidig — venter med at fade det nye billede ind til
 det faktisk er loadet (`img.onload`), så det ikke popper frem sent hvis
-det ikke er cachet.
+det ikke er cachet. Blendingen tager 550 ms (`SWAP_FADE_MS`, skal matche
+`transition` på `.slot img.garment`) med ease-out-kurven; det nye billede
+vokser samtidig fra 94 %, det gamle krymper mod 103 %, så skiftet føles
+som en bevægelse og ikke et blink. Bemærk at `.entering`/`.leaving` skal
+gentage `translate(-50%,-50%)` i deres `transform` — ellers ryger
+centreringen midt i overgangen.
 
 Slots uden tøj rendres som stiplede felter i stedet for at blive skjult
 (sker i praksis ikke længere, siden alle fem kategorier altid vælges,

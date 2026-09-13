@@ -602,7 +602,7 @@ function buildOutfit(){
   return next;
 }
 
-const SWAP_FADE_MS = 320;   // skal matche transition-varigheden for img.garment i CSS'en
+const SWAP_FADE_MS = 550;   // skal matche transition-varigheden for img.garment i CSS'en
 
 function renderSlot(slot, item){
   // Ved hurtige swipes efter hinanden kan flere billeder vaere ved at forsvinde samtidig ("leaving").
