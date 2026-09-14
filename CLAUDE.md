@@ -35,8 +35,10 @@ skabet/
     outerwear-*.jpg, mid-*.jpg, top-*.jpg, bottom-*.jpg, shoes-*.jpg   produktbilleder
     shorts-*.jpg          shorts-pulje, se "Sådan virker logikken"
     original-jpg/       de oprindelige fotos, git-ignoreret, bruges ikke af appen
-  raw/                  de 119 fotos som de kom fra kameraet, git-ignoreret
+  raw/                  de 119 fotos som UDKLIP (gennemsigtig baggrund), git-ignoreret
+  raw-baggrund/         fotos MED baggrund - det input der virker bedst, git-ignoreret
   klar/                 modellens raa output, git-ignoreret
+  klar-v1/ -v2/ -v3/    gamle outputs fra tidligere omgange, git-ignoreret
   klar-klargjort/       efter klargoer.py - kopieres til img/, git-ignoreret,
                         slettes trygt (klargoer.py laver den igen gratis)
   toj.py                sender billeder til Gemini, se "Billederne"
@@ -515,15 +517,24 @@ trial-kreditten kan ikke bruges der. 119 billeder kostede cirka 100 kr.
 
 To scripts, som køres i rækkefølge:
 
-1. **`toj.py`** sender hvert foto i `raw/` til modellen og gemmer svaret i
-   `klar/`. Prompten vælges ud fra filnavnets præfiks (`PROMPTS`), og
-   billedformatet ligeså (`FORMATER`). Tøj bedes om et stående 3:4-format og
-   sko om et liggende 4:3 — **det er formatet, ikke prompten, der får
-   modellen til at vende motivet rigtigt.** Uden det arvede den bare
-   originalfotoets rotation.
+1. **`toj.py`** sender hvert foto i `raw/` (eller mappen i miljøvariablen
+   `TOJ_IND`) til modellen og gemmer svaret i `klar/`. Prompten vælges ud
+   fra filnavnets præfiks (`PROMPTS`), og billedformatet ligeså
+   (`FORMATER`). Tøj bedes om et stående 3:4-format og sko om et liggende
+   4:3 — **det er formatet, ikke prompten, der får modellen til at vende
+   motivet rigtigt.** Uden det arvede den bare originalfotoets rotation.
+   Der sendes desuden et **referencebillede** med (`REFERENCER`, ét af de
+   eksisterende billeder pr. præfiks), som prompten peger på som "sådan
+   skal stilen være". Prompten låser posen fast: fladt, tomt, korte ærmer
+   ud til siden, lange ærmer ned langs kroppen.
 2. **`klargoer.py`** læser `klar/` og skriver `klar-klargjort/`. Den maler
    baggrunden rent hvid, beskærer den hvide luft væk så tøjet fylder rammen,
    og gemmer som **JPEG** i kvalitet 88. Den koster ingenting og kan køres igen.
+
+   Tolerancen hæves i trin indtil mindst `KANT_ANDEL` (99,5 %) af kanten
+   er baggrund — ikke kun de fire hjørner, som det var før. Modellen tegner
+   af og til en papirbaggrund med en svag gradient, og så slap et mørkere
+   bånd langs den ene kant igennem.
 
    Formatet er ikke ligegyldigt: som PNG fyldte de 119 billeder 106 MB, som
    JPEG fylder de 14 MB — syv gange mindre uden synlig forskel, heller ikke
@@ -535,6 +546,18 @@ Indholdet af `klar-klargjort/` kopieres derefter til `img/`. **Husk at bumpe
 
 Ting der er lært undervejs, og som koster penge at finde ud af igen:
 
+- **Send fotos MED baggrund, ikke udklip.** Første omgang (september 2026)
+  blev kørt fra fritlagte udklip i `raw/`, og resultatet varierede: et
+  mindretal kom tilbage krøllede (top-12/15/16/37, mid-27, bottom-4/10/15/
+  16/18), nogle med volumen som en usynlig mannequin (top-23/25/26,
+  mid-14/15/22), og ærmerne lå tilfældigt. Tre runder med strammere prompt
+  og reference bed ikke på jeans-krøller og volumen. Det gjorde fotos med
+  bord og gulv i — modellen får kontekst og lægger tøjet om, hvor et udklip
+  *er* sin silhuet, så den kopierer bulerne trofast. Fire stykker (top-7,
+  top-15, top-25, bottom-10) er kørt om fra `raw-baggrund/` og ligger i
+  `img/`; resten af garderoben venter på fotos med baggrund.
+- **Gode billeder skal ikke køres om.** top-7 var perfekt fra første omgang
+  og blev dårligere to gange i træk fra udklippet. Kør kun det der er skævt.
 - **Kvoten rammes før pengene.** Et nyt Google Cloud-projekt har lav kvote på
   billedmodellen, og svaret er `429 RESOURCE_EXHAUSTED` — det handler om kald
   per minut, ikke om beløb. Derfor `PAUSE` og den lange ventetid i `toj.py`.
@@ -555,8 +578,9 @@ Ting der er lært undervejs, og som koster penge at finde ud af igen:
   misfarvning, så `farve`-feltet i `files` — som blev sat ud fra de gamle
   fotos — kan passe dårligere nu.
 
-`raw/`, `klar/` og `klar-klargjort/` er git-ignorerede: de fylder flere
-hundrede MB tilsammen, og repoet er offentligt. **Appen bruger kun `img/`** —
+`raw/`, `raw-baggrund/`, `klar/`, `klar-v*/` og `klar-klargjort/` er
+git-ignorerede: de fylder flere hundrede MB tilsammen, og repoet er
+offentligt. **Appen bruger kun `img/`** —
 de tre andre er arbejdsmapper.
 
 Behold dem alligevel. `raw/` er dine originalfotos og kan ikke genskabes uden

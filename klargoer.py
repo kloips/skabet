@@ -30,6 +30,7 @@ UD   = Path("klar-klargjort")
 LUFT     = 0.02      # andel af motivets stoerrelse der beholdes som ramme
 KVALITET = 88        # JPEG-kvalitet - 88 er visuelt uskelneligt fra PNG her
 TRIN = (12, 30, 45)  # tolerancer der proeves i raekkefoelge
+KANT_ANDEL = 0.995   # saa stor en del af kanten skal vaere baggrund foer tolerancen er god nok
 
 
 def find_baggrund(im, tolerance):
@@ -67,11 +68,16 @@ def klargoer(sti):
     w, h = im.size
     px = im.load()
 
-    # Proev stadig loesere tolerance indtil hjoernerne bliver hvide
+    # Proev stadig loesere tolerance indtil (naesten) hele kanten er baggrund.
+    # Foer blev kun de fire hjoerner tjekket, og saa slap et baand igennem
+    # hvor baggrunden var moerkere langs den ene kant end i hjoernerne -
+    # modellen tegner af og til en papirbaggrund med en svag gradient.
+    kant = [(x, y) for x in range(w) for y in (2, h-3)] + \
+           [(x, y) for y in range(h) for x in (2, w-3)]
     for tolerance in TRIN:
         erbag = find_baggrund(im, tolerance)
-        hjoerner = [(2, 2), (w-3, 2), (2, h-3), (w-3, h-3)]
-        if all(erbag[y*w + x] for x, y in hjoerner):
+        andel = sum(erbag[y*w + x] for x, y in kant) / len(kant)
+        if andel >= KANT_ANDEL:
             break
 
     for y in range(h):

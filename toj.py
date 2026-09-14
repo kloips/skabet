@@ -6,7 +6,9 @@ from google.genai import types
 
 load_dotenv(".env")
 
-IND   = Path("raw")     # mappe med dine originalbilleder
+# Inputmappen kan skiftes med TOJ_IND=raw-baggrund - fotos MED baggrund gav
+# bedre resultat paa de stykker der ikke ville rette sig fra udklippene, se CLAUDE.md.
+IND   = Path(os.environ.get("TOJ_IND", "raw"))     # mappe med dine originalbilleder
 UD    = Path("klar")    # mappe hvor output lander
 MODEL = "gemini-3-pro-image"
 
@@ -28,31 +30,74 @@ FORSOEG = 5    # antal forsøg per billede
 
 # Testkørsel: sæt TEST til navnene på de stykker du vil teste (uden .png).
 # Sæt TEST = None når du vil køre hele garderoben.
-TEST = {"mid-7", "mid-11", "shoes-7", "shoes-13", "shoes-15", "shoes-18", "shorts-2"}
+# Anden omgang (september 2026): otte stykker der dækker de tre ting der
+# varierede i første omgang - krøller (top-15, top-37, bottom-10), volumen som
+# en usynlig mannequin (top-25, mid-22), og et par der var gode i forvejen
+# (top-7, mid-30, outerwear-6) for at se at de ikke bliver dårligere.
+# Tredje omgang: aermelinjen rettet (korte aermer ud til siden), haardere ord
+# om denim og volumen. top-7 er med for at bevise at gode ikke bliver daarlige.
+TEST = {"top-15", "top-7", "bottom-10", "top-25"}
+
+# Referencebillede per præfiks: et af de eksisterende billeder der har præcis
+# den stil alle skal have. Sendes med som billede nummer to, så modellen
+# efterligner en konkret stil i stedet for at tolke ord - det er det stærkeste
+# greb for at få en rød tråd. Sko har ingen reference; de var ensartede nok.
+REFERENCER = {
+    "top":       "img/top-7.jpg",
+    "mid":       "img/top-7.jpg",
+    "outerwear": "img/outerwear-5.jpg",
+    "bottom":    "img/bottom-11.jpg",
+    "shorts":    "img/bottom-11.jpg",
+}
 
 # Tøj der kan lægges fladt. Fælles prompt for alle kategorier på nær sko.
 # Katalog-look: tøjet skal se nyt og nyvasket ud, ikke slidt. Slid-klausulen
 # fra den første udgave er bevidst fjernet - det var den, der holdt det
 # gullige og brugte look fast. Identiteten holdes stadig fast (samme farve,
 # print, snit), ellers kommer der et andet stykke tøj ud.
-PROMPT_FLADT = """Transform this photo into a clean e-commerce product shot,
-as if the garment were brand new in a catalogue.
-Lay the garment completely flat and symmetrical, sleeves or legs
-extended, collar or waistband centered. The input photo may be rotated
-or sideways: rotate the garment so it stands upright in the final image,
-collar or waistband at the top and hem at the bottom, never lying on its
-side. Remove all wrinkles and creases,
-and make the fabric look freshly laundered and pressed. Remove stains,
-dirt, pilling, yellowing and discoloration, so the garment looks clean
-and evenly colored.
+# Anden udgave af prompten. Den første lod modellen vælge pose selv
+# ("sleeves extended" kan betyde ud til siden eller ned langs kroppen), og
+# den tog nogle gange en usynlig mannequin med volumen i skuldrene i stedet
+# for en flad genstand. Denne udgave låser én pose fast og peger på et
+# referencebillede. Krølle-instruktionen er skærpet, fordi et mindretal
+# kom tilbage ukrøllede alligevel.
+PROMPT_FLADT = """You are given two images. The FIRST image is a photo of a
+garment. The SECOND image is a style reference: a finished product shot in
+exactly the style the output must have. Copy the style of the second image
+- the flat presentation, the lighting, the framing, the white background -
+but the garment itself must be the one from the FIRST image.
+
+Produce a clean e-commerce product shot of the garment from the first
+image, as if it were brand new in a catalogue:
+
+- The garment lies perfectly FLAT on the surface, photographed straight
+  from above. It is EMPTY: no body inside it, no invisible mannequin, no
+  volume or rounding in the shoulders or chest, no shading that suggests a
+  torso. Think of it as a paper cut-out with zero thickness.
+- Short sleeves lie in their natural position, pointing out to the sides,
+  fully visible and never folded under or tucked in. Long sleeves lie
+  straight down along the sides of the body. Trouser legs lie straight
+  down, parallel, slightly apart. Collar or waistband centered at the top,
+  hem at the bottom. Perfectly symmetrical.
+- The input photo may be rotated or sideways: rotate the garment so it
+  stands upright, never lying on its side.
+- The fabric is freshly laundered and PRESSED: absolutely no wrinkles,
+  creases, folds or bunching anywhere. Smooth and even like a new garment
+  on a shop shelf. This is required even if the photo is very wrinkled.
+  For denim and trousers: keep the fading and the weave of the fabric,
+  but the surface must be completely smooth - creases across the legs,
+  at the knees or at the crotch are wrinkles, not texture, and must go.
+- Remove stains, dirt, pilling, yellowing and discoloration, so the color
+  is clean and even.
+
 It must remain the exact same garment: the same base color, the same
 pattern, the same print and its placement, the same cut, collar, buttons
 and proportions. Do not invent details and do not restyle the design.
+
 The background must be flat, uniform, pure white (#FFFFFF) across the
 whole frame: no grey backdrop, no gradient, no vignette, and no cast
-shadow on the surface under the garment.
-Soft even studio lighting, straight top-down view, garment centered and
-filling the frame."""
+shadow on the surface under the garment. Soft even studio lighting,
+garment centered and filling the frame."""
 
 # Sko kan ikke lægges fladt med "ærmer og ben strakt ud" - de skal stå
 # i den sædvanlige produktvinkel fra siden.
@@ -127,11 +172,19 @@ for i, fil in enumerate(filer, 1):
     mime = mimetypes.guess_type(fil.name)[0] or "image/jpeg"
     billede = types.Part.from_bytes(data=fil.read_bytes(), mime_type=mime)
 
+    # Foto først, reference bagefter - prompten omtaler dem som første og anden.
+    indhold = [billede]
+    reference = REFERENCER.get(præfiks)
+    if reference:
+        indhold.append(types.Part.from_bytes(data=Path(reference).read_bytes(),
+                                             mime_type="image/jpeg"))
+    indhold.append(prompt)
+
     for forsøg in range(FORSOEG):
         try:
             svar = client.models.generate_content(
                 model=MODEL,
-                contents=[billede, prompt],
+                contents=indhold,
                 config=types.GenerateContentConfig(
                     response_modalities=["IMAGE"],
                     image_config=types.ImageConfig(aspect_ratio=format)),
